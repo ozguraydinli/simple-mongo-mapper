@@ -9,10 +9,11 @@ import org.bson.types.ObjectId;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Optional;
 
 import tr.com.hive.smm.MapperFactory;
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
+import tr.com.hive.smm.mapping.annotation.MongoId;
 
 /**
  * Created by ozgur on 4/3/17.

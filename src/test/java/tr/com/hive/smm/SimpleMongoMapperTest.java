@@ -14,9 +14,9 @@ import org.junit.Test;
 
 import java.util.*;
 
-import tr.com.hive.smm.mapping.MongoEntity;
-import tr.com.hive.smm.mapping.MongoId;
-import tr.com.hive.smm.mapping.MongoRef;
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
+import tr.com.hive.smm.mapping.annotation.MongoId;
+import tr.com.hive.smm.mapping.annotation.MongoRef;
 
 /**
  * Created by ozgur on 4/4/17.

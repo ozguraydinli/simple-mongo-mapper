@@ -1,4 +1,4 @@
-package tr.com.hive.smm.mapping;
+package tr.com.hive.smm.mapping.annotation;
 
 /**
  * Created by ozgur on 4/4/17.

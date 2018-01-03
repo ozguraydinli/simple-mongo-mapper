@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import tr.com.hive.smm.mapping.*;
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
 
 /**
  * Created by ozgur on 4/7/17.

@@ -15,6 +15,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import tr.com.hive.smm.MapperFactory;
+import tr.com.hive.smm.mapping.annotation.MongoId;
+import tr.com.hive.smm.mapping.annotation.MongoRef;
+import tr.com.hive.smm.mapping.annotation.MongoTransient;
 
 /**
  * Created by ozgur on 4/3/17.
