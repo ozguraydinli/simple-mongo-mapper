@@ -31,8 +31,7 @@ BsonValue bsonValue = new SimpleMongoMapper().toBsonValue(myClass);
 
 ```java
 @MongoEntity // Marks a class as an entity
-```
-```java
+
 @MongoEntity("anotherName") // Use this version if you want to map from a specific name
 ```
 
