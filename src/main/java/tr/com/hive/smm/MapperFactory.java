@@ -3,10 +3,12 @@ package tr.com.hive.smm;
 import com.mongodb.DBRef;
 
 import org.bson.Document;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -89,6 +91,12 @@ public class MapperFactory {
       } else if (Collection.class.isAssignableFrom(value.getClass())) {
         if (Collection.class.isAssignableFrom(aClass)) {
           return new CollectionConverter(this, key, aClass, (ParameterizedType) genericType);
+        } else {
+          throw new MappingException("Cannot parse: key" + key);
+        }
+      } else if (BigDecimal.class.isAssignableFrom(value.getClass()) || Decimal128.class.isAssignableFrom(value.getClass())) {
+        if (BigDecimal.class.isAssignableFrom(aClass)) {
+          return new BigDecimalConverter(this, key, aClass);
         } else {
           throw new MappingException("Cannot parse: key" + key);
         }

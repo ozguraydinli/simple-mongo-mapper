@@ -8,10 +8,12 @@ import com.mongodb.DBRef;
 import org.bson.BsonDocument;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
@@ -66,6 +68,19 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals(MyEnum.En2, classA.varClassB.varEnum);
     Assert.assertEquals(null, classA.varClassB2);
     Assert.assertEquals(null, classA.varClazzB2);
+  }
+
+  @Test
+  public void testSingleField_BigDecimal() {
+    Document document = new Document();
+
+    BigDecimal varBigDecimal = new BigDecimal(13);
+    document.put("varBigDecimal", new Decimal128(varBigDecimal));
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
+
+    Assert.assertEquals(new BigDecimal(varBigDecimal.toBigInteger()), classA.varBigDecimal);
   }
 
   @Test
@@ -217,6 +232,7 @@ public class SimpleMongoMapperTest {
     classA.varBoxedInt = Integer.valueOf(1);
     classA.varEnum = MyEnum.En1;
     classA.varDate = new Date();
+
     ObjectId id2 = new ObjectId();
     classA.varClassC = new ClassC(id2);
     classA.varClassB = ClassB.create(1);
@@ -252,6 +268,17 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals("1", document(document.get("varMapOfEnumString")).get(MyEnum.En1.name()));
     Assert.assertEquals(null, document.get("varClassB2"));
     Assert.assertEquals(null, document.get("varMapOfString2"));
+  }
+
+  @Test
+  public void test_toDocument_BigDecimal() {
+    ClassA classA = new ClassA();
+    classA.varBigDecimal = new BigDecimal(15);
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    Document document = simpleMongoMapper.toDocument(classA);
+
+    Assert.assertEquals(new BigDecimal(classA.varBigDecimal.toBigInteger()), ((Decimal128) document.get("varBigDecimal")).bigDecimalValue());
   }
 
   @SuppressWarnings("unchecked")
@@ -428,6 +455,8 @@ public class SimpleMongoMapperTest {
     private Date varDate;
 
     private ObjectId varObjectId;
+
+    private BigDecimal varBigDecimal;
 
     // collections
     private List<String> varListOfString;
