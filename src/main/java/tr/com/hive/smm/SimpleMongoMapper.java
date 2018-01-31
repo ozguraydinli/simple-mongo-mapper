@@ -18,7 +18,7 @@ public class SimpleMongoMapper {
 
   private static final Collection<Class<?>> knownEntities = new CopyOnWriteArrayList<>();
 
-  protected SimpleMongoMapper() {
+  public SimpleMongoMapper() {
   }
 
   public Collection<Class<?>> getKnownEntities() {
