@@ -2,6 +2,8 @@ package tr.com.hive.smm.mapping;
 
 import java.lang.reflect.Type;
 
+import tr.com.hive.smm.mapping.annotation.MongoField;
+
 /**
  * Created by ozgur on 4/4/17.
  */
@@ -13,6 +15,8 @@ public class MappedField {
   private boolean ref;
   private boolean isId;
   private String mongoIdAnnotationValue;
+
+  private MongoField mongoField;
 
   public MappedField(Class<?> aCLass, Type genericType) {
     this.aCLass = aCLass;
@@ -59,6 +63,14 @@ public class MappedField {
 
   public String getMongoIdAnnotationValue() {
     return mongoIdAnnotationValue;
+  }
+
+  public MongoField getMongoField() {
+    return mongoField;
+  }
+
+  public void setMongoField(MongoField mongoField) {
+    this.mongoField = mongoField;
   }
 
 }

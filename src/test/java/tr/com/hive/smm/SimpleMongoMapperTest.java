@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
+import tr.com.hive.smm.mapping.annotation.MongoField;
 import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoRef;
 
@@ -283,6 +284,27 @@ public class SimpleMongoMapperTest {
 
   @SuppressWarnings("unchecked")
   @Test
+  public void test_toDocument_EmptyCollection() {
+    ClassA classA = new ClassA();
+    classA.varListOfClassB_MongoField = null;
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    Document document = simpleMongoMapper.toDocument(classA);
+
+    Assert.assertEquals(null, document.get("varListOfClassB_MongoField"));
+
+    classA.varListOfClassB_MongoField = Lists.newArrayList();
+    document = simpleMongoMapper.toDocument(classA);
+    Assert.assertEquals(0, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).size());
+
+    ObjectId id = new ObjectId();
+    classA.varListOfClassB_MongoField = Lists.newArrayList(new ClassB(id));
+    document = simpleMongoMapper.toDocument(classA);
+    Assert.assertEquals(id, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).get(0).getObjectId("id"));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
   public void test_toBsonValue() {
     ClassA classA = new ClassA();
     classA.varString = "s1";
@@ -474,6 +496,9 @@ public class SimpleMongoMapperTest {
     private List<ObjectId> varListOfObjectId;
 
     private List<ClassB> varListOfClassB;
+
+    @MongoField(asEmptyArray = true)
+    private List<ClassB> varListOfClassB_MongoField;
 
     private Map<String, String> varMapOfString;
 

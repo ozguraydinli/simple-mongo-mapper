@@ -90,7 +90,7 @@ public class MapperFactory {
         }
       } else if (Collection.class.isAssignableFrom(value.getClass())) {
         if (Collection.class.isAssignableFrom(aClass)) {
-          return new CollectionConverter(this, key, aClass, (ParameterizedType) genericType);
+          return new CollectionConverter(this, key, aClass, (ParameterizedType) genericType, mappedField);
         } else {
           throw new MappingException("Cannot parse: key" + key);
         }

@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import tr.com.hive.smm.MapperFactory;
+import tr.com.hive.smm.mapping.annotation.MongoField;
 import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoRef;
 import tr.com.hive.smm.mapping.annotation.MongoTransient;
@@ -192,6 +193,10 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
           mappedField.setRef(true);
         } else if (field.isAnnotationPresent(MongoId.class)) {
           mappedField.setIsId(true);
+        }
+
+        if (field.isAnnotationPresent(MongoField.class)) {
+          mappedField.setMongoField(field.getAnnotation(MongoField.class));
         }
 
         Object value = field.get(obj);

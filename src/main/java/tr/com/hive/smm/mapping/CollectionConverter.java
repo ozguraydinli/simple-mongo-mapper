@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 import tr.com.hive.smm.MapperFactory;
+import tr.com.hive.smm.mapping.annotation.MongoField;
 
 /**
  * Created by ozgur on 4/3/17.
@@ -20,10 +21,12 @@ import tr.com.hive.smm.MapperFactory;
 public class CollectionConverter extends AbstractConverter implements Converter {
 
   private ParameterizedType genericType;
+  private MappedField mappedField;
 
-  public CollectionConverter(MapperFactory mapperFactory, String key, Class<?> clazz, ParameterizedType genericType) {
+  public CollectionConverter(MapperFactory mapperFactory, String key, Class<?> clazz, ParameterizedType genericType, MappedField mappedField) {
     super(mapperFactory, key, clazz);
     this.genericType = genericType;
+    this.mappedField = mappedField;
   }
 
   @Override
@@ -132,9 +135,24 @@ public class CollectionConverter extends AbstractConverter implements Converter 
 
         Collection collection = (Collection) obj;
 
-        if (collection.size() == 0) {
-          return null;
+        MongoField mongoField = mappedField.getMongoField();
+        if (mongoField == null || !mongoField.asEmptyArray()) {
+          if (collection.size() == 0) {
+            return null;
+          }
         }
+
+//        if (mongoField != null) {
+//          if (!mongoField.asEmptyArray()) {
+//            if (collection.size() == 0) {
+//              return null;
+//            }
+//          }
+//        } else {
+//          if (collection.size() == 0) {
+//            return null;
+//          }
+//        }
 
         ArrayList<Object> list = Lists.newArrayList();
 
