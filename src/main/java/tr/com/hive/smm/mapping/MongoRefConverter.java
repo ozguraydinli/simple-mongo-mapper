@@ -31,7 +31,7 @@ public class MongoRefConverter extends AbstractConverter implements Converter {
         String collectionName = ((DBRef) obj).getCollectionName();
 
         if (!clazz.isAnnotationPresent(MongoEntity.class)) {
-          throw new IllegalStateException("Cannot map unkown entity. You need put MongoEntity annottion.");
+          throw new IllegalStateException("Cannot map unkown entity. You need put MongoEntity annottion. " + clazz.getName());
         }
 
         String value = clazz.getAnnotation(MongoEntity.class).value();
