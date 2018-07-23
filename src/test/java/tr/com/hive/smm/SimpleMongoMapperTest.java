@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.mongodb.DBRef;
 
 import org.bson.BsonDocument;
+import org.bson.BsonUndefined;
 import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.types.Decimal128;
@@ -51,12 +52,14 @@ public class SimpleMongoMapperTest {
 
     document.put("varClassB", ClassB.createDocument(1, now));
 
+    document.put("varBsonUndefined", new BsonUndefined());
+
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
     Assert.assertEquals(new ObjectId(id.toString()), classA.id);
     Assert.assertEquals("myVal", classA.varString);
-    Assert.assertEquals(null, classA.varNullString);
+    Assert.assertNull( classA.varNullString);
     Assert.assertEquals(MyEnum.En1, classA.varEnum);
     Assert.assertEquals(1, classA.varInt);
     Assert.assertEquals(Integer.valueOf(1), classA.varBoxedInt);
@@ -67,8 +70,9 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals(1, classA.varClassB.varInt);
     Assert.assertEquals(new Date(now.getTime()), classA.varClassB.varDate);
     Assert.assertEquals(MyEnum.En2, classA.varClassB.varEnum);
-    Assert.assertEquals(null, classA.varClassB2);
-    Assert.assertEquals(null, classA.varClazzB2);
+    Assert.assertNull( classA.varClassB2);
+    Assert.assertNull( classA.varClazzB2);
+    Assert.assertNull( classA.varBsonUndefined);
   }
 
   @Test
@@ -177,7 +181,10 @@ public class SimpleMongoMapperTest {
     document.put("varMapOfObjectId", createDocumentForMapObjectId(id1));
     Date now = new Date();
     document.put("varMapOfDate", createDocumentForMapDate(now));
-    document.put("varMapOfClassB", createDocumentForMapClassB());
+
+    Document documentForMapClassB = createDocumentForMapClassB();
+    document.put("varMapOfClassB", documentForMapClassB);
+
     document.put("varMapOfListOfString", createDocumentForMapListOfString());
     document.put("varMapOfListOfDate", createDocumentForMapListOfDate(now));
     document.put("varMapOfListOfClassB", createDocumentForMapListOfClassB());
@@ -207,6 +214,7 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals("s1", classA.varMapOfClassB.get("a").varString);
     Assert.assertEquals(2, classA.varMapOfClassB.get("a").varListOfString.size());
     Assert.assertEquals("b1", classA.varMapOfClassB.get("a").varListOfString.get(0));
+    Assert.assertNotNull(classA.varMapOfClassB.get("a").id);
 
     Assert.assertEquals(2, classA.varMapOfListOfString.size());
     Assert.assertEquals("a1", classA.varMapOfListOfString.get("a").get(0));
@@ -308,6 +316,11 @@ public class SimpleMongoMapperTest {
   public void test_toBsonValue() {
     ClassA classA = new ClassA();
     classA.varString = "s1";
+
+    classA.varMapOfClassB = Maps.newHashMap();
+    ObjectId idOfClassB = new ObjectId();
+    classA.varMapOfClassB.put("a", ClassB.create(idOfClassB, 1));
+
     classA.varDate = new Date();
     classA.varComplexEnum = MyComplexEnum.ComplexEn1;
     classA.varListOfComplexEnum = Lists.newArrayList(MyComplexEnum.ComplexEn1, MyComplexEnum.ComplexEn2);
@@ -321,6 +334,8 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals(classA.varDate.getTime(), document.getDateTime("varDate").getValue());
     Assert.assertEquals(MyComplexEnum.ComplexEn1, MyComplexEnum.valueOf(document.getString("varComplexEnum").getValue()));
     Assert.assertEquals(MyComplexEnum.ComplexEn2, MyComplexEnum.valueOf(document.getArray("varListOfComplexEnum").get(1).asString().getValue()));
+
+    Assert.assertEquals(idOfClassB, document.get("varMapOfClassB").asDocument().get("a").asDocument().getObjectId("id").getValue());
 
     Assert.assertEquals(MyComplexEnum.ComplexEn1.name(), simpleMongoMapper.toBsonValue(MyComplexEnum.ComplexEn1).asString().getValue());
   }
@@ -480,6 +495,8 @@ public class SimpleMongoMapperTest {
 
     private BigDecimal varBigDecimal;
 
+    private String varBsonUndefined; // type is not actually, it could be something different than String
+
     // collections
     private List<String> varListOfString;
 
@@ -601,6 +618,18 @@ public class SimpleMongoMapperTest {
 
     public static ClassB create(int i) {
       ClassB classB = new ClassB();
+      classB.varString = "s" + i;
+      classB.varInt = i;
+      classB.varDate = new Date();
+      classB.varEnum = MyEnum.En2;
+      classB.varListOfString = Lists.newArrayList("b" + i, "bb" + i);
+
+      return classB;
+    }
+
+    public static ClassB create(ObjectId id, int i) {
+      ClassB classB = new ClassB();
+      classB.id = id;
       classB.varString = "s" + i;
       classB.varInt = i;
       classB.varDate = new Date();

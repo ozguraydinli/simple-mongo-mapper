@@ -2,6 +2,7 @@ package tr.com.hive.smm;
 
 import com.mongodb.DBRef;
 
+import org.bson.BsonUndefined;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
@@ -48,7 +49,7 @@ public class MapperFactory {
 
     try {
 
-      if (value == null) {
+      if (value == null || value instanceof BsonUndefined) {
         return new EmptyConverter();
       }
 
