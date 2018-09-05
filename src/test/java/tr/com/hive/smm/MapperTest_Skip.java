@@ -18,6 +18,14 @@ import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
+import tr.com.hive.smm.mapping.annotation.MongoId;
+import tr.com.hive.smm.mapping.annotation.index.Field;
+import tr.com.hive.smm.mapping.annotation.index.Index;
+import tr.com.hive.smm.mapping.annotation.index.IndexOptions;
+import tr.com.hive.smm.mapping.annotation.index.Indexes;
 
 /**
  * Created by ozgur on 3/24/16.
@@ -129,6 +137,29 @@ public class MapperTest_Skip {
 
 //    collection.deleteOne(new Document("_id", id));
 //    System.out.println(test);
+
+    database.drop();
+  }
+
+  @Test
+  public void test_Index() {
+    MongoDatabase database = getDatabase("smm");
+
+    IndexClass indexClass = new IndexClass();
+    indexClass.id = new ObjectId();
+    indexClass.field1 = "falans";
+    indexClass.fieldCmp1 = "a1";
+    indexClass.fieldCmp2 = "a2";
+    indexClass.fieldCmp3 = "a3";
+
+    SimpleMongoMapper mapper = new SimpleMongoMapper(database);
+
+    Document document = mapper.toDocument(indexClass);
+
+    // this shuold trigger createIndex
+    mapper.fromDocument(document, IndexClass.class);
+
+    database.drop();
   }
 
   private BsonArray createBsonArray(int i) {
@@ -200,7 +231,9 @@ public class MapperTest_Skip {
         Splitter.on(",").omitEmptyStrings().limit(3).trimResults().split(host));
 
       if (split.size() > 1) {
-        List<ServerAddress> serverAddresses = Lists.transform(split, input -> new ServerAddress(input, Integer.valueOf(port)));
+        List<ServerAddress> serverAddresses = split.stream()
+                                                   .map(input -> new ServerAddress(input, Integer.valueOf(port)))
+                                                   .collect(Collectors.toList());
 
         return new MongoClient(serverAddresses, credentialsList, options);
       }
@@ -209,6 +242,37 @@ public class MapperTest_Skip {
 
     } else {
       return new MongoClient(new ServerAddress(host, Integer.valueOf(port)), options);
+    }
+  }
+
+  @Indexes({
+    @Index(
+      fields = {@Field(value = "field1")},
+      options = @IndexOptions(name = "field1Index")),
+    @Index(
+      fields = {@Field(value = "uniqueId")},
+      options = @IndexOptions(name = "uniqueIdIndex", unique = true)),
+    @Index(
+      fields = {@Field(value = "fieldCmp1"), @Field(value = "fieldCmp2"), @Field(value = "fieldCmp3")},
+      options = @IndexOptions(name = "cmpIndex"))
+  })
+  @MongoEntity
+  public static class IndexClass {
+
+    @MongoId
+    public ObjectId id;
+
+    private int uniqueId;
+
+    private String field1;
+
+    private String fieldCmp1;
+
+    private String fieldCmp2;
+
+    private String fieldCmp3;
+
+    public IndexClass() {
     }
   }
 

@@ -1,12 +1,15 @@
 package tr.com.hive.smm;
 
 
+import com.google.common.collect.Maps;
+
+import com.mongodb.client.MongoDatabase;
+
 import org.bson.BsonValue;
 import org.bson.Document;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
 
 import tr.com.hive.smm.mapping.DocumentConverter;
 
@@ -16,37 +19,66 @@ import tr.com.hive.smm.mapping.DocumentConverter;
 @SuppressWarnings("unchecked")
 public class SimpleMongoMapper {
 
-  private static final Collection<Class<?>> knownEntities = new CopyOnWriteArrayList<>();
+  private final Map<Class<?>, MappedClass> mappedClassCache = Maps.newConcurrentMap();
+
+  private MongoDatabase mongoDatabase;
+
+  private IndexHelper indexHelper;
 
   public SimpleMongoMapper() {
   }
 
-  public Collection<Class<?>> getKnownEntities() {
-    return Collections.unmodifiableCollection(knownEntities);
+  public SimpleMongoMapper(MongoDatabase mongoDatabase) {
+    this.mongoDatabase = mongoDatabase;
+    this.indexHelper = new IndexHelper(mongoDatabase);
   }
 
   public boolean isMongoEntity(Class<?> aClass) {
-    return knownEntities.contains(aClass);
+    return mappedClassCache.containsKey(aClass);
+  }
+
+  public void addEntity(Object obj) {
+    // if it is not a collection type
+    if (!(obj instanceof Collection) && !(obj instanceof Map)) {
+      Class<?> aClass = obj.getClass();
+
+      // and if it is not an annotation
+      if (!aClass.isAnnotation() && !aClass.isEnum()) {
+        addEntity(aClass);
+      }
+    }
   }
 
   public void addEntity(Class<?> aClass) {
-    if (!knownEntities.contains(aClass)) {
-      knownEntities.add(aClass);
+    if (mappedClassCache.containsKey(aClass)) {
+      return;
+    }
+
+    MappedClass mappedClass = new MappedClass(aClass);
+    mappedClassCache.put(aClass, mappedClass);
+
+    if (indexHelper != null) {
+      indexHelper.createIndexes(mappedClass);
     }
   }
 
   public <T> T fromDocument(Document document, Class<T> clazz) {
-    MapperFactory mapperFactory = new MapperFactory(this);
-
-    return new DocumentConverter<>(mapperFactory, "", clazz, 0).decode(document);
+    addEntity(clazz);
+    return new DocumentConverter<>(new MapperFactory(this), "", clazz, 0).decode(document);
   }
 
   public BsonValue toBsonValue(Object obj) {
+    addEntity(obj);
     return ToBsonValue.toBsonValue(obj, this);
   }
 
   public Document toDocument(Object obj) {
+    addEntity(obj);
     return ToDocument.toDocument(obj, this);
+  }
+
+  public Map<Class<?>, MappedClass> getMappedClassCache() {
+    return mappedClassCache;
   }
 
 }

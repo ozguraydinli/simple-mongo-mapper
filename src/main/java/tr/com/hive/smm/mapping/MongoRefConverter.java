@@ -1,7 +1,5 @@
 package tr.com.hive.smm.mapping;
 
-import com.google.common.base.Strings;
-
 import com.mongodb.DBRef;
 
 import org.bson.*;
@@ -11,6 +9,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
 
+import tr.com.hive.smm.MappedClass;
 import tr.com.hive.smm.MapperFactory;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoId;
@@ -31,17 +30,14 @@ public class MongoRefConverter extends AbstractConverter implements Converter {
         String collectionName = ((DBRef) obj).getCollectionName();
 
         if (!clazz.isAnnotationPresent(MongoEntity.class)) {
-          throw new IllegalStateException("Cannot map unkown entity. You need put MongoEntity annottion. " + clazz.getName());
+          throw new IllegalStateException("Cannot map unkown entity. You need to provide MongoEntity annotation. " + clazz.getName());
         }
 
-        String value = clazz.getAnnotation(MongoEntity.class).value();
+        mapperFactory.getMongoMapper().getMappedClassCache().computeIfAbsent(clazz, c -> new MappedClass(clazz));
+        MappedClass mappedClass = mapperFactory.getMongoMapper().getMappedClassCache().get(clazz);
 
-        boolean valid;
-        if (Strings.isNullOrEmpty(value)) {
-          valid = clazz.getSimpleName().equals(collectionName);
-        } else {
-          valid = value.equals(collectionName);
-        }
+        String value = mappedClass.getCollectionName();
+        boolean valid = value.equals(collectionName);
 
         // silently ignore if it is not valid
         if (valid) {
