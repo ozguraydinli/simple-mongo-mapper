@@ -10,10 +10,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,13 +55,7 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
 
       Class<?> tClass = t.getClass();
 
-      Map<String, Field> fieldMap = ReflectionUtils.getAllFields(tClass)
-                                                   .stream()
-                                                   .filter(field -> !field.isSynthetic())
-                                                   .filter(field -> !Modifier.isStatic(field.getModifiers()))
-                                                   .filter(field -> !Modifier.isFinal(field.getModifiers()))
-                                                   .filter(f -> !f.isAnnotationPresent(MongoTransient.class))
-                                                   .collect(Collectors.toMap(Field::getName, f -> f));
+      Map<String, Field> fieldMap = getFieldMap(tClass);
 
       for (String key : document.keySet()) {
         Object value = document.get(key);
@@ -106,6 +100,23 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
     }
   }
 
+  private Map<String, Field> getFieldMap(Class<?> tClass) {
+    return ReflectionUtils.getAllFields(tClass)
+                          .stream()
+                          .filter(field -> !field.isSynthetic())
+                          .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                          .filter(field -> !Modifier.isFinal(field.getModifiers()))
+                          .filter(f -> !f.isAnnotationPresent(MongoTransient.class))
+                          .collect(Collectors.toMap(Field::getName, f -> f, throwingMerger(), LinkedHashMap::new));
+  }
+
+  // merge function taken directly from JDK - Collectors.java
+  private static <T> BinaryOperator<T> throwingMerger() {
+    return (u, v) -> {
+      throw new IllegalStateException(String.format("Duplicate key %s", u));
+    };
+  }
+
   private void setAccessibleTrueDefaultConstructor(String typeName) {
     // find the default constructor
 
@@ -139,15 +150,9 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
     try {
 
       Class<?> aClass = obj.getClass();
-      Field[] declaredFields = aClass.getDeclaredFields();
+      Map<String, Field> fieldMap = getFieldMap(aClass);
 
-      List<Field> fields = Arrays.stream(declaredFields)
-                                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
-                                 .filter(field -> !Modifier.isFinal(field.getModifiers()))
-                                 .filter(f -> !f.isAnnotationPresent(MongoTransient.class))
-                                 .collect(Collectors.toList());
-
-      for (Field field : fields) {
+      for (Field field : fieldMap.values()) {
         field.setAccessible(true);
 
         Class<?> aCLass = field.getType();
@@ -204,15 +209,9 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
     try {
 
       Class<?> aClass = obj.getClass();
-      Field[] declaredFields = aClass.getDeclaredFields();
+      Map<String, Field> fieldMap = getFieldMap(aClass);
 
-      List<Field> fields = Arrays.stream(declaredFields)
-                                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
-                                 .filter(field -> !Modifier.isFinal(field.getModifiers()))
-                                 .filter(f -> !f.isAnnotationPresent(MongoTransient.class))
-                                 .collect(Collectors.toList());
-
-      for (Field field : fields) {
+      for (Field field : fieldMap.values()) {
         field.setAccessible(true);
 
         Class<?> aCLass = field.getType();
