@@ -1,17 +1,20 @@
 package tr.com.hive.smm;
 
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 
 import org.bson.BsonValue;
 import org.bson.Document;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import tr.com.hive.smm.mapping.DocumentConverter;
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
 
 /**
  * Created by ozgur on 3/24/16.
@@ -38,18 +41,14 @@ public class SimpleMongoMapper {
   }
 
   public void addEntity(Object obj) {
-    // if it is not a collection type
-    if (!(obj instanceof Collection) && !(obj instanceof Map)) {
-      Class<?> aClass = obj.getClass();
-
-      // and if it is not an annotation
-      if (!aClass.isAnnotation() && !aClass.isEnum()) {
-        addEntity(aClass);
-      }
-    }
+    addEntity(obj.getClass());
   }
 
   public void addEntity(Class<?> aClass) {
+    if (!aClass.isAnnotationPresent(MongoEntity.class)) {
+      return;
+    }
+
     if (mappedClassCache.containsKey(aClass)) {
       return;
     }
@@ -65,6 +64,22 @@ public class SimpleMongoMapper {
   public <T> T fromDocument(Document document, Class<T> clazz) {
     addEntity(clazz);
     return new DocumentConverter<>(new MapperFactory(this), "", clazz, 0).decode(document);
+  }
+
+  public <T> List<T> fromMongoIterable(MongoIterable<Document> iterable, Class<T> clazz) {
+    if (iterable == null) {
+      throw new NullPointerException("iterable cannot be null");
+    }
+
+    addEntity(clazz);
+
+    List<T> list = Lists.newArrayList();
+
+    for (Document document : iterable) {
+      list.add(new DocumentConverter<>(new MapperFactory(this), "", clazz, 0).decode(document));
+    }
+
+    return list;
   }
 
   public BsonValue toBsonValue(Object obj) {

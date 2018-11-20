@@ -4,20 +4,28 @@ package tr.com.hive.smm;
  * Created by ozgur on 4/7/17.
  */
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-import com.mongodb.*;
-import com.mongodb.MongoClientOptions.Builder;
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
+import de.flapdoodle.embed.mongo.MongodExecutable;
+import de.flapdoodle.embed.mongo.MongodProcess;
+import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
+import de.flapdoodle.embed.mongo.config.Net;
+import de.flapdoodle.embed.mongo.distribution.Version;
+import de.flapdoodle.embed.process.runtime.Network;
+
+import junit.framework.TestCase;
 
 import org.bson.*;
 import org.bson.types.ObjectId;
 import org.junit.Test;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
@@ -30,12 +38,42 @@ import tr.com.hive.smm.mapping.annotation.index.Indexes;
 /**
  * Created by ozgur on 3/24/16.
  */
-public class MapperTest_Skip {
+public class MapperTest extends TestCase {
 
-  private static MongoClient MONGO_CLIENT;
+  private static final MongodStarter starter = MongodStarter.getDefaultInstance();
+
+  private MongodExecutable _mongodExe;
+  private MongodProcess _mongod;
+
+  private MongoClient _mongo;
+
+  @Override
+  protected void setUp() throws Exception {
+    _mongodExe = starter.prepare(new MongodConfigBuilder()
+                                   .version(Version.Main.PRODUCTION)
+                                   .net(new Net("localhost", 12345, Network.localhostIsIPv6()))
+                                   .build());
+    _mongod = _mongodExe.start();
+
+    super.setUp();
+
+    _mongo = new MongoClient("localhost", 12345);
+  }
+
+  @Override
+  protected void tearDown() throws Exception {
+    super.tearDown();
+
+    _mongod.stop();
+    _mongodExe.stop();
+  }
+
+  public MongoClient getMongo() {
+    return _mongo;
+  }
 
   @Test
-  public void test_map() throws Exception {
+  public void test_map() {
     BsonDocument document = new BsonDocument();
     ObjectId id = new ObjectId();
 //    document.put("_id", id);
@@ -156,8 +194,23 @@ public class MapperTest_Skip {
 
     Document document = mapper.toDocument(indexClass);
 
-    // this shuold trigger createIndex
+    // this should trigger createIndex
     mapper.fromDocument(document, IndexClass.class);
+
+    MongoCollection<Document> collection = database.getCollection(IndexClass.class.getSimpleName());
+
+    ArrayList<Document> indexes = collection.listIndexes().into(Lists.newArrayList());
+
+    assertTrue(indexes.size() != 0);
+    assertEquals(4, indexes.size()); // we expect 1 more for id field
+
+    Set<String> indexNmaes = indexes.stream()
+                                    .map(index -> index.getString("name"))
+                                    .collect(Collectors.toSet());
+
+    assertTrue(indexNmaes.contains("field1Index"));
+    assertTrue(indexNmaes.contains("uniqueIdIndex"));
+    assertTrue(indexNmaes.contains("cmpIndex"));
 
     database.drop();
   }
@@ -194,55 +247,8 @@ public class MapperTest_Skip {
     return bsonDocument;
   }
 
-  public static MongoDatabase getDatabase(String dbName) {
-    if (MONGO_CLIENT == null) {
-      MONGO_CLIENT = getMongoClient();
-    }
-
-    return MONGO_CLIENT.getDatabase(dbName);
-  }
-
-  public static MongoClient getMongoClient() {
-
-    if (MONGO_CLIENT == null) {
-      try {
-
-        MONGO_CLIENT = getMongoClient("127.0.0.1", "27017", "", "");
-
-      } catch (NumberFormatException | MongoException e) {
-//        System.err.println(e.toString() + " $ " +  getSimpleName() + " $ getMongoClient $ " + e.getMessage());
-      }
-    }
-
-    return MONGO_CLIENT;
-  }
-
-  private static MongoClient getMongoClient(String host, String port, String dbUsername, String dbPassword)
-    throws NumberFormatException, MongoException {
-
-    MongoClientOptions options = new Builder()
-      .writeConcern(WriteConcern.ACKNOWLEDGED)
-      .build();
-
-    if (!Strings.isNullOrEmpty(dbUsername) && !Strings.isNullOrEmpty(dbPassword)) {
-
-      List<MongoCredential> credentialsList = Lists.newArrayList(MongoCredential.createCredential(dbUsername, "admin", dbPassword.toCharArray()));
-      List<String> split = Lists.newArrayList(
-        Splitter.on(",").omitEmptyStrings().limit(3).trimResults().split(host));
-
-      if (split.size() > 1) {
-        List<ServerAddress> serverAddresses = split.stream()
-                                                   .map(input -> new ServerAddress(input, Integer.valueOf(port)))
-                                                   .collect(Collectors.toList());
-
-        return new MongoClient(serverAddresses, credentialsList, options);
-      }
-
-      return new MongoClient(new ServerAddress(host, Integer.valueOf(port)), credentialsList, options);
-
-    } else {
-      return new MongoClient(new ServerAddress(host, Integer.valueOf(port)), options);
-    }
+  public MongoDatabase getDatabase(String dbName) {
+    return getMongo().getDatabase(dbName);
   }
 
   @Indexes({

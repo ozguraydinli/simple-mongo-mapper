@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +22,7 @@ import tr.com.hive.smm.mapping.annotation.MongoField;
 import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoRef;
 import tr.com.hive.smm.mapping.annotation.MongoTransient;
+import tr.com.hive.smm.util.ReflectionUtils;
 
 /**
  * Created by ozgur on 4/3/17.
@@ -52,50 +54,49 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
       T t = (T) forName.newInstance();
 
       Class<?> tClass = t.getClass();
-      Field[] declaredFields = tClass.getDeclaredFields();
 
-      List<String> fields = Arrays.stream(declaredFields)
-                                  .filter(field -> !Modifier.isStatic(field.getModifiers()))
-                                  .filter(field -> !Modifier.isFinal(field.getModifiers()))
-                                  .filter(f -> !f.isAnnotationPresent(MongoTransient.class))
-                                  .map(Field::getName)
-                                  .collect(Collectors.toList());
+      Map<String, Field> fieldMap = ReflectionUtils.getAllFields(tClass)
+                                                   .stream()
+                                                   .filter(field -> !field.isSynthetic())
+                                                   .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                                                   .filter(field -> !Modifier.isFinal(field.getModifiers()))
+                                                   .filter(f -> !f.isAnnotationPresent(MongoTransient.class))
+                                                   .collect(Collectors.toMap(Field::getName, f -> f));
 
       for (String key : document.keySet()) {
         Object value = document.get(key);
 
         Field field = null;
         if ("_id".equals(key)) {
-          Optional<Field> first = Arrays.stream(clazz.getDeclaredFields())
-                                        .filter(f -> f.isAnnotationPresent(MongoId.class))
-                                        .findFirst();
+          Optional<Field> first = fieldMap.values()
+                                          .stream()
+                                          .filter(f -> f.isAnnotationPresent(MongoId.class))
+                                          .findFirst();
           if (first.isPresent()) {
             field = first.get();
           }
+
+        } else if (fieldMap.containsKey(key)) {
+          field = fieldMap.get(key);
         }
 
-        if (fields.contains(key)) {
-          field = tClass.getDeclaredField(key);
+        if (field != null) {
+
+          field.setAccessible(true);
+
+          Class<?> aCLass = field.getType();
+          Type genericType = field.getGenericType();
+
+          MappedField mappedField = new MappedField(aCLass, genericType, depth);
+          if (field.isAnnotationPresent(MongoRef.class)) {
+            mappedField.setRef(true);
+          } else if (field.isAnnotationPresent(MongoId.class)) {
+            mappedField.setIsId(true);
+          }
+
+          Converter converter = mapperFactory.get(key, value, mappedField);
+          field.set(t, converter.decode(value));
         }
-
-        if (field == null) {
-          continue;
-        }
-
-        field.setAccessible(true);
-
-        Class<?> aCLass = field.getType();
-        Type genericType = field.getGenericType();
-
-        MappedField mappedField = new MappedField(aCLass, genericType, depth);
-        if (field.isAnnotationPresent(MongoRef.class)) {
-          mappedField.setRef(true);
-        } else if (field.isAnnotationPresent(MongoId.class)) {
-          mappedField.setIsId(true);
-        }
-
-        Converter converter = mapperFactory.get(key, value, mappedField);
-        field.set(t, converter.decode(value));
       }
 
       return t;

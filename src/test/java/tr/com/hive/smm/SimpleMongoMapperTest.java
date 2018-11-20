@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 
 import com.mongodb.DBRef;
 
+import junit.framework.TestCase;
+
 import org.bson.BsonDocument;
 import org.bson.BsonUndefined;
 import org.bson.BsonValue;
@@ -27,7 +29,7 @@ import tr.com.hive.smm.mapping.annotation.MongoRef;
  *
  * Simluates as if a query is returned as a Document
  */
-public class SimpleMongoMapperTest {
+public class SimpleMongoMapperTest extends TestCase {
 
   @Test
   public void testSingleField() {
@@ -59,7 +61,7 @@ public class SimpleMongoMapperTest {
 
     Assert.assertEquals(new ObjectId(id.toString()), classA.id);
     Assert.assertEquals("myVal", classA.varString);
-    Assert.assertNull( classA.varNullString);
+    Assert.assertNull(classA.varNullString);
     Assert.assertEquals(MyEnum.En1, classA.varEnum);
     Assert.assertEquals(1, classA.varInt);
     Assert.assertEquals(Integer.valueOf(1), classA.varBoxedInt);
@@ -70,9 +72,22 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals(1, classA.varClassB.varInt);
     Assert.assertEquals(new Date(now.getTime()), classA.varClassB.varDate);
     Assert.assertEquals(MyEnum.En2, classA.varClassB.varEnum);
-    Assert.assertNull( classA.varClassB2);
-    Assert.assertNull( classA.varClazzB2);
-    Assert.assertNull( classA.varBsonUndefined);
+    Assert.assertNull(classA.varClassB2);
+    Assert.assertNull(classA.varClazzB2);
+    Assert.assertNull(classA.varBsonUndefined);
+  }
+
+  @Test
+  public void testSingleField_SuperClass() {
+    Document document = new Document();
+    document.put("varStringSuper", "myVal");
+    document.put("varIntSuper", 1);
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
+
+    Assert.assertEquals("myVal", classA.varStringSuper);
+//    Assert.assertEquals(1, classA.varIntSuper);
   }
 
   @Test
@@ -459,7 +474,15 @@ public class SimpleMongoMapperTest {
   }
 
   @MongoEntity
-  protected static class ClassA {
+  protected static class ClassASuper {
+
+    protected String varStringSuper;
+
+    protected int varIntSuper;
+  }
+
+  @MongoEntity
+  protected static class ClassA extends ClassASuper {
 
     @MongoId
     private ObjectId id;

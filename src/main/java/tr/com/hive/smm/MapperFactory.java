@@ -106,13 +106,13 @@ public class MapperFactory {
           if (primitiveToClassMap.get(aClass) == value.getClass()) {
             return new PrimitiveConverter(this, key, aClass);
           } else {
-            throw new MappingException("Unknown primitive type : " + value.getClass().getName());
+            throw new MappingException("Unknown primitive type: " + value.getClass().getName());
           }
         } else if (isKnownType(aClass)) {
           if (aClass == value.getClass()) {
             return new PrimitiveConverter(this, key, aClass);
           } else {
-            throw new MappingException("Unknown primitive type : " + value.getClass().getName());
+            throw new MappingException("Unknown primitive type: " + value.getClass().getName());
           }
         } else {
           Class<?> clazz1 = Class.forName(genericType.getTypeName());

@@ -6,7 +6,7 @@
 
   <groupId>tr.com.hive</groupId>
   <artifactId>simple-mongo-mapper</artifactId>
-  <version>0.4</version>
+  <version>0.4.3</version>
   <packaging>jar</packaging>
 
   <name>simple-mongo-mapper</name>
@@ -74,6 +74,12 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>${guava.version}</version>
+		</dependency>
+		<dependency>
+    	<groupId>de.flapdoodle.embed</groupId>
+    	<artifactId>de.flapdoodle.embed.mongo</artifactId>
+    	<version>2.1.1</version>
+			<scope>test</scope>
 		</dependency>
 
   </dependencies>
