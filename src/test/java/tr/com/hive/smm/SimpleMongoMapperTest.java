@@ -5,8 +5,6 @@ import com.google.common.collect.Maps;
 
 import com.mongodb.DBRef;
 
-import junit.framework.TestCase;
-
 import org.bson.BsonDocument;
 import org.bson.BsonUndefined;
 import org.bson.BsonValue;
@@ -17,19 +15,17 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 
-import tr.com.hive.smm.mapping.annotation.MongoEntity;
-import tr.com.hive.smm.mapping.annotation.MongoField;
-import tr.com.hive.smm.mapping.annotation.MongoId;
-import tr.com.hive.smm.mapping.annotation.MongoRef;
+import tr.com.hive.smm.model.*;
 
 /**
  * Created by ozgur on 4/4/17.
  *
  * Simluates as if a query is returned as a Document
  */
-public class SimpleMongoMapperTest extends TestCase {
+public class SimpleMongoMapperTest {
 
   @Test
   public void testSingleField() {
@@ -250,6 +246,8 @@ public class SimpleMongoMapperTest extends TestCase {
     ClassA classA = new ClassA();
     ObjectId id = new ObjectId();
     classA.id = id;
+    ObjectId classBId = new ObjectId();
+    classA.refClassB = new ClassB(classBId);
     classA.varString = "s1";
     classA.varNullString = null;
     classA.varInt = 1;
@@ -272,10 +270,10 @@ public class SimpleMongoMapperTest extends TestCase {
     Document document = simpleMongoMapper.toDocument(classA);
 
     Assert.assertEquals(new ObjectId(id.toString()), document.getObjectId("_id"));
-    Assert.assertEquals(null, document.get("id"));
+    Assert.assertNull(document.get("id"));
 
     Assert.assertEquals("s1", document.getString("varString"));
-    Assert.assertEquals(null, document.get("varNullString"));
+    Assert.assertNull(document.get("varNullString"));
 
     Assert.assertEquals(Integer.valueOf(1), document.getInteger("varInt"));
     Assert.assertEquals(Integer.valueOf(1), document.getInteger("varBoxedInt"));
@@ -290,8 +288,10 @@ public class SimpleMongoMapperTest extends TestCase {
     Assert.assertEquals("bb1", ((ArrayList<String>) document(document.get("varClassB")).get("varListOfString")).get(1));
     Assert.assertEquals("1", document(document.get("varMapOfString")).get("a"));
     Assert.assertEquals("1", document(document.get("varMapOfEnumString")).get(MyEnum.En1.name()));
-    Assert.assertEquals(null, document.get("varClassB2"));
-    Assert.assertEquals(null, document.get("varMapOfString2"));
+    Assert.assertNull(document.get("varClassB2"));
+    Assert.assertNull(document.get("varMapOfString2"));
+
+    System.out.println(document.get("refClassB"));
   }
 
   @Test
@@ -471,247 +471,6 @@ public class SimpleMongoMapperTest extends TestCase {
     document.put("b", document2);
 
     return document;
-  }
-
-  @MongoEntity
-  protected static class ClassASuper {
-
-    protected String varStringSuper;
-
-    protected int varIntSuper;
-  }
-
-  @MongoEntity
-  protected static class ClassA extends ClassASuper {
-
-    @MongoId
-    private ObjectId id;
-
-    private ClassC varClassC;
-
-    @MongoRef
-    private ClassB refClassB;
-
-    private ClassB varClassB;
-
-    private ClassB varClassB2;
-
-    private ClassB varClassB3;
-
-    private ClassB2 varClazzB2;
-
-    private String varString;
-
-    private String varNullString = null;
-
-    private MyEnum varEnum;
-
-    private MyComplexEnum varComplexEnum;
-
-    private int varInt;
-
-    private Integer varBoxedInt;
-
-    private Date varDate;
-
-    private ObjectId varObjectId;
-
-    private BigDecimal varBigDecimal;
-
-    private String varBsonUndefined; // type is not actually, it could be something different than String
-
-    // collections
-    private List<String> varListOfString;
-
-    private List<Integer> varListOfInteger1;
-
-    private List<Integer> varListOfInteger2;
-
-    private List<Date> varListOfDate;
-
-    private List<MyEnum> varListOfEnum;
-
-    private List<MyComplexEnum> varListOfComplexEnum;
-
-    private List<ObjectId> varListOfObjectId;
-
-    private List<ClassB> varListOfClassB;
-
-    @MongoField(asEmptyArray = true)
-    private List<ClassB> varListOfClassB_MongoField;
-
-    private Map<String, String> varMapOfString;
-
-    private Map<String, String> varMapOfString2;
-
-    private Map<MyEnum, String> varMapOfEnumString;
-
-    private Map<ObjectId, String> varMapOfObjectIdString;
-
-    private Map<Integer, String> varMapOfIntegerString;
-
-    private Map<String, ObjectId> varMapOfObjectId;
-
-    private Map<String, Date> varMapOfDate;
-
-    private Map<String, ClassB> varMapOfClassB;
-
-    private Map<String, List<String>> varMapOfListOfString;
-
-    private Map<String, List<Date>> varMapOfListOfDate;
-
-    private Map<String, List<ClassB>> varMapOfListOfClassB;
-
-    private Map<String, Map<String, String>> varMapOfMapOfString;
-
-    private Set<String> varSetOfString;
-
-    private Set<MyEnum> varSetOfEnum;
-
-    @MongoRef
-    private List<ClassB> refListOfClassB;
-
-    @MongoRef
-    private List<ClassB> refListOfClassBEmpty;
-
-    @MongoRef
-    private List<ClassB> refListOfClassBEmptyWithInit = Lists.newArrayList();
-
-    // nested collections
-    private List<List<String>> varListOfListOfString;
-
-    private List<List<ObjectId>> varListOfListOfObjectId;
-
-    private List<List<ClassB>> varListOfListOfClassB;
-
-    public ClassA() {
-    }
-  }
-
-  @MongoEntity
-  protected static class ClassC {
-
-    @MongoId
-    public ObjectId Id;
-
-    public ClassC() {
-    }
-
-    public ClassC(ObjectId id) {
-      this.Id = id;
-    }
-  }
-
-  protected static class ClassB2 {
-
-    public double varDouble;
-
-    public ClassB2() {
-    }
-  }
-
-  @MongoEntity
-  protected static class ClassB {
-
-    @MongoId
-    private ObjectId id;
-
-    private String varString;
-
-    private int varInt;
-
-    private Date varDate;
-
-    private MyEnum varEnum;
-
-    private List<String> varListOfString;
-
-    public static Document createDocument(int i, Date date) {
-      Document document = new Document();
-
-      document.put("id", new ObjectId());
-      document.put("varString", "s" + i);
-      document.put("varInt", i);
-      document.put("varDate", date);
-      document.put("varEnum", MyEnum.En2.name());
-      document.put("varListOfString", Lists.newArrayList("b" + i, "bb" + i));
-
-      return document;
-    }
-
-    public static ClassB create(int i) {
-      ClassB classB = new ClassB();
-      classB.varString = "s" + i;
-      classB.varInt = i;
-      classB.varDate = new Date();
-      classB.varEnum = MyEnum.En2;
-      classB.varListOfString = Lists.newArrayList("b" + i, "bb" + i);
-
-      return classB;
-    }
-
-    public static ClassB create(ObjectId id, int i) {
-      ClassB classB = new ClassB();
-      classB.id = id;
-      classB.varString = "s" + i;
-      classB.varInt = i;
-      classB.varDate = new Date();
-      classB.varEnum = MyEnum.En2;
-      classB.varListOfString = Lists.newArrayList("b" + i, "bb" + i);
-
-      return classB;
-    }
-
-    public ClassB() {
-    }
-
-    public ClassB(ObjectId id) {
-      this.id = id;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof ClassB)) {
-        return false;
-      }
-
-      ClassB classB = (ClassB) o;
-
-      return id != null ? id.equals(classB.id) : classB.id == null;
-    }
-
-    @Override
-    public int hashCode() {
-      return id != null ? id.hashCode() : 0;
-    }
-
-  }
-
-  public enum MyEnum {
-    En1, En2
-  }
-
-  public enum MyComplexEnum {
-    ComplexEn1("complex enum 1", "value 1"), ComplexEn2("complex enum 2", "value 2");
-
-    private String name;
-    private String value;
-
-    MyComplexEnum(String name, String value) {
-      this.name = name;
-      this.value = value;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public String getValue() {
-      return value;
-    }
   }
 
 }

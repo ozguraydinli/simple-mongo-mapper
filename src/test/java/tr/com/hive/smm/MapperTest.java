@@ -6,9 +6,12 @@ package tr.com.hive.smm;
 
 import com.google.common.collect.Lists;
 
+import com.mongodb.DBRef;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.InsertOneModel;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -18,10 +21,11 @@ import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 
-import junit.framework.TestCase;
-
 import org.bson.*;
 import org.bson.types.ObjectId;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,11 +38,13 @@ import tr.com.hive.smm.mapping.annotation.index.Field;
 import tr.com.hive.smm.mapping.annotation.index.Index;
 import tr.com.hive.smm.mapping.annotation.index.IndexOptions;
 import tr.com.hive.smm.mapping.annotation.index.Indexes;
+import tr.com.hive.smm.model.ClassA;
+import tr.com.hive.smm.model.ClassB;
 
 /**
  * Created by ozgur on 3/24/16.
  */
-public class MapperTest extends TestCase {
+public class MapperTest {
 
   private static final MongodStarter starter = MongodStarter.getDefaultInstance();
 
@@ -47,22 +53,19 @@ public class MapperTest extends TestCase {
 
   private MongoClient _mongo;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     _mongodExe = starter.prepare(new MongodConfigBuilder()
                                    .version(Version.Main.PRODUCTION)
                                    .net(new Net("localhost", 12345, Network.localhostIsIPv6()))
                                    .build());
     _mongod = _mongodExe.start();
 
-    super.setUp();
-
     _mongo = new MongoClient("localhost", 12345);
   }
 
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void tearDown() throws Exception {
 
     _mongod.stop();
     _mongodExe.stop();
@@ -70,6 +73,26 @@ public class MapperTest extends TestCase {
 
   public MongoClient getMongo() {
     return _mongo;
+  }
+
+  @Test
+  public void test_refField_bulkwrite() {
+    ClassA classA = new ClassA();
+    ObjectId id = new ObjectId();
+    classA.id = id;
+    ObjectId classBId = new ObjectId();
+    classA.refClassB = new ClassB(classBId);
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+
+    MongoDatabase database = getDatabase("smm");
+    MongoCollection<Document> collection = database.getCollection("test_bulkwrite");
+
+    collection.bulkWrite(Lists.newArrayList(new InsertOneModel<>(simpleMongoMapper.toDocument(classA))));
+
+    Document returnedDoc = collection.find(Filters.exists("_id")).iterator().next();
+
+    Assert.assertEquals(DBRef.class, returnedDoc.get("refClassB").getClass());
   }
 
   @Test
@@ -201,16 +224,16 @@ public class MapperTest extends TestCase {
 
     ArrayList<Document> indexes = collection.listIndexes().into(Lists.newArrayList());
 
-    assertTrue(indexes.size() != 0);
-    assertEquals(4, indexes.size()); // we expect 1 more for id field
+    Assert.assertTrue(indexes.size() != 0);
+    Assert.assertEquals(4, indexes.size()); // we expect 1 more for id field
 
     Set<String> indexNmaes = indexes.stream()
                                     .map(index -> index.getString("name"))
                                     .collect(Collectors.toSet());
 
-    assertTrue(indexNmaes.contains("field1Index"));
-    assertTrue(indexNmaes.contains("uniqueIdIndex"));
-    assertTrue(indexNmaes.contains("cmpIndex"));
+    Assert.assertTrue(indexNmaes.contains("field1Index"));
+    Assert.assertTrue(indexNmaes.contains("uniqueIdIndex"));
+    Assert.assertTrue(indexNmaes.contains("cmpIndex"));
 
     database.drop();
   }
@@ -280,6 +303,7 @@ public class MapperTest extends TestCase {
 
     public IndexClass() {
     }
+
   }
 
 }
