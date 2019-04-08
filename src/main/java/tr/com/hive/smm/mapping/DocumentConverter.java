@@ -18,10 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tr.com.hive.smm.MapperFactory;
-import tr.com.hive.smm.mapping.annotation.MongoField;
-import tr.com.hive.smm.mapping.annotation.MongoId;
-import tr.com.hive.smm.mapping.annotation.MongoRef;
-import tr.com.hive.smm.mapping.annotation.MongoTransient;
+import tr.com.hive.smm.mapping.annotation.*;
 import tr.com.hive.smm.util.ReflectionUtils;
 
 /**
@@ -47,11 +44,9 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
     try {
       Document document = (Document) obj;
 
-      String typeName = clazz.getTypeName();
-      setAccessibleTrueDefaultConstructor(typeName);
-      Class<?> forName = Class.forName(typeName);
+      Constructor<?> constructor = MapperUtil.getDefaultConstructor(clazz);
 
-      T t = (T) forName.newInstance();
+      T t = (T) constructor.newInstance();
 
       Class<?> tClass = t.getClass();
 
@@ -86,6 +81,10 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
             mappedField.setRef(true);
           } else if (field.isAnnotationPresent(MongoId.class)) {
             mappedField.setIsId(true);
+          } else if (field.isAnnotationPresent(MongoCustomConverter.class)) {
+            Class<? extends Converter> clazz = field.getAnnotation(MongoCustomConverter.class).value();
+            mappedField.setHasCustomConverter(true);
+            mappedField.setCustomConverter(clazz);
           }
 
           Converter converter = mapperFactory.get(key, value, mappedField);
@@ -117,31 +116,7 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
     };
   }
 
-  private void setAccessibleTrueDefaultConstructor(String typeName) {
-    // find the default constructor
 
-    // search public constructors
-    Optional<Constructor<?>> optional = Stream.of(clazz.getConstructors())
-                                              .filter(c -> c.getParameterCount() == 0)
-                                              .findFirst();
-
-    if (optional.isPresent()) {
-      Constructor<?> defaultConstructor = optional.get();
-      defaultConstructor.setAccessible(true);
-    } else {
-      // search non-public constructors
-      optional = Stream.of(clazz.getDeclaredConstructors())
-                       .filter(c -> c.getParameterCount() == 0)
-                       .findFirst();
-
-      if (optional.isPresent()) {
-        Constructor<?> defaultConstructor = optional.get();
-        defaultConstructor.setAccessible(true);
-      } else {
-        throw new MappingException("No default constructor for " + typeName);
-      }
-    }
-  }
 
   @Override
   public BsonValue encode(Object obj) {
@@ -259,4 +234,5 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
 
     return document;
   }
+
 }

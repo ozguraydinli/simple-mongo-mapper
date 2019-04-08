@@ -7,6 +7,7 @@ import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -51,6 +52,12 @@ public class MapperFactory {
 
       if (value == null || value instanceof BsonUndefined) {
         return new EmptyConverter();
+      }
+
+      if (mappedField.hasCustomConverter()) {
+        Class<? extends Converter> converterClazz = mappedField.getConverterClazz();
+        Constructor<?> constructor = MapperUtil.getDefaultConstructor(converterClazz);
+        return (Converter) constructor.newInstance();
       }
 
       if (value instanceof String || value instanceof Enum) {

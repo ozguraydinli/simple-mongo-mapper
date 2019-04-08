@@ -18,6 +18,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
+import tr.com.hive.smm.mapping.Converter;
+import tr.com.hive.smm.mapping.MappingException;
+import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
+import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.model.*;
 
 /**
@@ -355,6 +360,30 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals(MyComplexEnum.ComplexEn1.name(), simpleMongoMapper.toBsonValue(MyComplexEnum.ComplexEn1).asString().getValue());
   }
 
+  @Test
+  public void test_PrivateConstructor() {
+    ObjectId id = new ObjectId();
+    Document document = new Document("_id", id).append("stringField", "field value");
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    PrivateConsClazz clazz = simpleMongoMapper.fromDocument(document, PrivateConsClazz.class);
+
+    Assert.assertEquals(id, clazz.getId());
+    Assert.assertEquals("field value", clazz.getStringField());
+  }
+
+  @Test
+  public void test_CustomConverter() {
+    ObjectId id = new ObjectId();
+    Document document = new Document("_id", id).append("stringField", "field value");
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    CustomConverterClazz clazz = simpleMongoMapper.fromDocument(document, CustomConverterClazz.class);
+
+    Assert.assertEquals(id, clazz.id);
+    Assert.assertEquals("field valuea", clazz.stringField);
+  }
+
   protected static Document document(Object obj) {
     return (Document) obj;
   }
@@ -471,6 +500,36 @@ public class SimpleMongoMapperTest {
     document.put("b", document2);
 
     return document;
+  }
+
+  @MongoEntity
+  private static class CustomConverterClazz {
+
+    @MongoId
+    public ObjectId id;
+
+    @MongoCustomConverter(CustomConverter.class)
+    public String stringField;
+
+  }
+
+  private static class CustomConverter implements Converter {
+
+    @Override
+    public BsonValue encode(Object obj) throws MappingException {
+      return null;
+    }
+
+    @Override
+    public Object decode(Object obj) throws MappingException {
+      return obj + "a";
+    }
+
+    @Override
+    public Object encodeToDocument(Object obj) throws MappingException {
+      return null;
+    }
+
   }
 
 }
