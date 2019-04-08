@@ -10,11 +10,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import tr.com.hive.smm.mapping.Converter;
+import tr.com.hive.smm.mapping.EmptyConverter;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface MongoCustomConverter {
 
-  Class<? extends Converter> value();
+  Class<? extends Converter> value() default EmptyConverter.class;
+
+  Class<?> converterClass() default EmptyConverter.class;
 
 }

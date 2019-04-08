@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import tr.com.hive.smm.MapperFactory;
 import tr.com.hive.smm.mapping.annotation.*;
@@ -82,9 +81,21 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
           } else if (field.isAnnotationPresent(MongoId.class)) {
             mappedField.setIsId(true);
           } else if (field.isAnnotationPresent(MongoCustomConverter.class)) {
-            Class<? extends Converter> clazz = field.getAnnotation(MongoCustomConverter.class).value();
             mappedField.setHasCustomConverter(true);
-            mappedField.setCustomConverter(clazz);
+
+            MongoCustomConverter annotation = field.getAnnotation(MongoCustomConverter.class);
+            Class<? extends Converter> clazz = annotation.value();
+            if (clazz == EmptyConverter.class) {
+              Class<?> converterClass = annotation.converterClass();
+              if (converterClass == EmptyConverter.class) {
+                throw new MappingException("value or converterClass must be set for MongoCustomConverter. " + key);
+              }
+
+              mappedField.setCustomConverter(converterClass);
+            } else {
+              mappedField.setCustomConverter(clazz);
+            }
+
           }
 
           Converter converter = mapperFactory.get(key, value, mappedField);
@@ -115,7 +126,6 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
       throw new IllegalStateException(String.format("Duplicate key %s", u));
     };
   }
-
 
 
   @Override

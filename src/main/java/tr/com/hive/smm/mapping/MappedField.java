@@ -18,9 +18,10 @@ public class MappedField {
 
   private MongoField mongoField;
 
-  private Class<? extends Converter> converterClazz;
+  private Class<?> converterClazz;
 
   private boolean hasCustomConverter = false;
+  private String customConverterName;
 
   public MappedField(Class<?> aCLass, Type genericType) {
     this.aCLass = aCLass;
@@ -77,11 +78,11 @@ public class MappedField {
     this.mongoField = mongoField;
   }
 
-  public void setCustomConverter(Class<? extends Converter> converterClazz) {
+  public void setCustomConverter(Class<?> converterClazz) {
     this.converterClazz = converterClazz;
   }
 
-  public Class<? extends Converter> getConverterClazz() {
+  public Class<?> getConverterClazz() {
     return converterClazz;
   }
 

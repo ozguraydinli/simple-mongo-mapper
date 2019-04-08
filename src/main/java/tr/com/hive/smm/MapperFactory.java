@@ -55,9 +55,15 @@ public class MapperFactory {
       }
 
       if (mappedField.hasCustomConverter()) {
-        Class<? extends Converter> converterClazz = mappedField.getConverterClazz();
+        Class<?> converterClazz = mappedField.getConverterClazz();
         Constructor<?> constructor = MapperUtil.getDefaultConstructor(converterClazz);
-        return (Converter) constructor.newInstance();
+        Object newInstance = constructor.newInstance();
+
+        if (!(newInstance instanceof Converter)) {
+          throw new MappingException("Custom converter must implement Converter interface: " + key);
+        }
+
+        return (Converter) newInstance;
       }
 
       if (value instanceof String || value instanceof Enum) {
