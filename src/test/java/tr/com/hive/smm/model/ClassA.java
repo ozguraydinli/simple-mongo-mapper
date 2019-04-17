@@ -103,6 +103,9 @@ public class ClassA extends ClassASuper {
   public Set<MyEnum> varSetOfEnum;
 
   @MongoRef
+  public List<ClassA> refListOfClassA;
+
+  @MongoRef
   public List<ClassB> refListOfClassB;
 
   @MongoRef
@@ -119,6 +122,10 @@ public class ClassA extends ClassASuper {
   public List<List<ClassB>> varListOfListOfClassB;
 
   public ClassA() {
+  }
+
+  public ClassA(ObjectId id) {
+    this.id = id;
   }
 
 }

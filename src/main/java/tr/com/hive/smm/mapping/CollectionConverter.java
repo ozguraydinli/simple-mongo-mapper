@@ -99,9 +99,17 @@ public class CollectionConverter extends AbstractConverter implements Converter 
 
         for (Object o : collection) {
 
-          MappedField mappedField = new MappedField(cls2, typeArgument2);
+          MappedField mappedFieldInner = new MappedField(cls2, typeArgument2);
+          if (mappedField.isRef()) {
+            mappedFieldInner.setRef(true);
+          }
 
-          Converter converter = mapperFactory.get(key, o, mappedField);
+          if (mappedField.hasCustomConverter()) {
+            mappedFieldInner.setHasCustomConverter(true);
+            mappedFieldInner.setCustomConverter(mappedField.getConverterClazz());
+          }
+
+          Converter converter = mapperFactory.get(key, o, mappedFieldInner);
 
           BsonValue encode = converter.encode(o);
 
@@ -158,9 +166,17 @@ public class CollectionConverter extends AbstractConverter implements Converter 
 
         for (Object o : collection) {
 
-          MappedField mappedField = new MappedField(cls2, typeArgument2);
+          MappedField mappedFieldInner = new MappedField(cls2, typeArgument2);
+          if (mappedField.isRef()) {
+            mappedFieldInner.setRef(true);
+          }
 
-          Converter converter = mapperFactory.get(key, o, mappedField);
+          if (mappedField.hasCustomConverter()) {
+            mappedFieldInner.setHasCustomConverter(true);
+            mappedFieldInner.setCustomConverter(mappedField.getConverterClazz());
+          }
+
+          Converter converter = mapperFactory.get(key, o, mappedFieldInner);
 
           Object encodeToDocument = converter.encodeToDocument(o);
           if (encodeToDocument != null) {

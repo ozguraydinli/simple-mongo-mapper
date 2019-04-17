@@ -384,6 +384,22 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals("field valuea", clazz.stringField);
   }
 
+  @Test
+  public void test_CollectionRefField_encodeToDocument() {
+    ClassA classA = new ClassA();
+    classA.id = new ObjectId();
+
+    ObjectId innerId = new ObjectId();
+    classA.refListOfClassA = Lists.newArrayList(new ClassA(innerId));
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    Document document = simpleMongoMapper.toDocument(classA);
+
+    Assert.assertEquals(1, ((ArrayList<Document>) document.get("refListOfClassA")).size());
+    Assert.assertEquals(innerId, ((ArrayList<Document>) document.get("refListOfClassA")).get(0).getObjectId("$id"));
+//    Assert.assertEquals("field valuea", clazz.stringField);
+  }
+
   protected static Document document(Object obj) {
     return (Document) obj;
   }

@@ -43,7 +43,6 @@ public class PrimitiveConverter extends AbstractConverter implements Converter {
     }
   }
 
-
   @Override
   public Object encodeToDocument(Object obj) throws MappingException {
     return obj;

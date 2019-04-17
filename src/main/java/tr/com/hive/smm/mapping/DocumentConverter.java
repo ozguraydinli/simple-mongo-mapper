@@ -95,7 +95,6 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
             } else {
               mappedField.setCustomConverter(clazz);
             }
-
           }
 
           Converter converter = mapperFactory.get(key, value, mappedField);
@@ -153,6 +152,21 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
           String mongoIdAnnotationValue = mongoIdAnnotation.value();
 
           mappedField.setMongoIdValue(mongoIdAnnotationValue);
+        } else if (field.isAnnotationPresent(MongoCustomConverter.class)) {
+          mappedField.setHasCustomConverter(true);
+
+          MongoCustomConverter annotation = field.getAnnotation(MongoCustomConverter.class);
+          Class<? extends Converter> clazz = annotation.value();
+          if (clazz == EmptyConverter.class) {
+            Class<?> converterClass = annotation.converterClass();
+            if (converterClass == EmptyConverter.class) {
+              throw new MappingException("value or converterClass must be set for MongoCustomConverter. " + key);
+            }
+
+            mappedField.setCustomConverter(converterClass);
+          } else {
+            mappedField.setCustomConverter(clazz);
+          }
         }
 
         Object value = field.get(obj);
