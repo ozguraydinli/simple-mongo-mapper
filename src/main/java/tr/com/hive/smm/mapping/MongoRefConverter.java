@@ -1,5 +1,7 @@
 package tr.com.hive.smm.mapping;
 
+import com.google.common.base.Strings;
+
 import com.mongodb.DBRef;
 
 import org.bson.*;
@@ -105,6 +107,14 @@ public class MongoRefConverter extends AbstractConverter implements Converter {
 
         if (!(o instanceof ObjectId)) {
           throw new MappingException("id field must be ObjectId type:  " + clzz.getName());
+        }
+
+        if (clzz.isAnnotationPresent(MongoEntity.class)) {
+          MongoEntity annotation = clzz.getAnnotation(MongoEntity.class);
+          String value = annotation.value();
+          if (!Strings.isNullOrEmpty(value)) {
+            return new DBRef(value, o);
+          }
         }
 
         return new DBRef(clzz.getSimpleName(), o);
