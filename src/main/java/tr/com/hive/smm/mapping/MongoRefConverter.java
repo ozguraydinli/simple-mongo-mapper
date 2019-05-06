@@ -4,7 +4,10 @@ import com.google.common.base.Strings;
 
 import com.mongodb.DBRef;
 
-import org.bson.*;
+import org.bson.BsonDocument;
+import org.bson.BsonObjectId;
+import org.bson.BsonString;
+import org.bson.BsonValue;
 import org.bson.types.ObjectId;
 
 import java.lang.reflect.Field;
@@ -81,14 +84,7 @@ public class MongoRefConverter extends AbstractConverter implements Converter {
 
   @Override
   public Object encodeToDocument(Object obj) throws MappingException {
-    DBRef dbRef = dbRef(obj);
-
-    Document document = new Document();
-
-    document.put("$ref", dbRef.getCollectionName());
-    document.put("$id", dbRef.getId());
-
-    return document;
+    return dbRef(obj);
   }
 
   public DBRef dbRef(Object obj) throws MappingException {
