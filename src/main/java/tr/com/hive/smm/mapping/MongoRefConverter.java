@@ -44,25 +44,31 @@ public class MongoRefConverter extends AbstractConverter implements Converter {
         String value = mappedClass.getCollectionName();
         boolean valid = value.equals(collectionName);
 
-        // silently ignore if it is not valid
-        if (valid) {
-          Object instance = clazz.newInstance();
-
-          Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(MongoId.class))
-                .findFirst()
-                .ifPresent(field -> {
-                  try {
-                    field.setAccessible(true);
-                    field.set(instance, ((DBRef) obj).getId());
-                  } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                  }
-                });
-
-          return instance;
+        if (!valid) {
+          throw new MappingException(
+            "Type mismatch for DBRef field. " +
+            "key=" + key +
+            "value=" + value +
+            "collectionName=" + collectionName);
         }
+
+        Object instance = clazz.newInstance();
+
+        Arrays.stream(clazz.getDeclaredFields())
+              .filter(field -> field.isAnnotationPresent(MongoId.class))
+              .findFirst()
+              .ifPresent(field -> {
+                try {
+                  field.setAccessible(true);
+                  field.set(instance, ((DBRef) obj).getId());
+                } catch (IllegalAccessException e) {
+                  e.printStackTrace();
+                }
+              });
+
+        return instance;
       }
+
     } catch (Throwable t) {
       throw new MappingException("Mapping error", t);
     }
