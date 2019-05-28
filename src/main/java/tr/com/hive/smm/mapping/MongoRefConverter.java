@@ -46,10 +46,10 @@ public class MongoRefConverter extends AbstractConverter implements Converter {
 
         if (!valid) {
           throw new MappingException(
-            "Type mismatch for DBRef field. " +
-            "key=" + key +
-            "value=" + value +
-            "collectionName=" + collectionName);
+            "Type mismatch for DBRef field." +
+            " key=" + key +
+            " value=" + value +
+            " collectionName=" + collectionName);
         }
 
         Object instance = clazz.newInstance();
