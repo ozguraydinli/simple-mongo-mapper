@@ -86,7 +86,7 @@ public class MapperFactory {
         if (Map.class.isAssignableFrom(aClass)) {
           return new MapConverter(this, key, aClass, (ParameterizedType) genericType);
         } else if (Collection.class.isAssignableFrom(aClass) || isKnownType(aClass)) {
-          throw new MappingException("Cannot parse: key" + key);
+          throw new MappingException("Cannot parse: key " + key);
         } else {
           Class<?> clazz1 = Class.forName(genericType.getTypeName());
           int depth = mappedField.getDepth();
@@ -106,13 +106,13 @@ public class MapperFactory {
         if (Collection.class.isAssignableFrom(aClass)) {
           return new CollectionConverter(this, key, aClass, (ParameterizedType) genericType, mappedField);
         } else {
-          throw new MappingException("Cannot parse: key" + key);
+          throw new MappingException("Cannot parse: key " + key);
         }
       } else if (BigDecimal.class.isAssignableFrom(value.getClass()) || Decimal128.class.isAssignableFrom(value.getClass())) {
         if (BigDecimal.class.isAssignableFrom(aClass)) {
           return new BigDecimalConverter(this, key, aClass);
         } else {
-          throw new MappingException("Cannot parse: key" + key);
+          throw new MappingException("Cannot parse: key " + key);
         }
       } else {
         if (aClass.isPrimitive()) {
