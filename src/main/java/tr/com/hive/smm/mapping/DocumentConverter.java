@@ -62,6 +62,8 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
                                           .findFirst();
           if (first.isPresent()) {
             field = first.get();
+          } else if (fieldMap.containsKey(key)) {
+            field = fieldMap.get(key);
           }
 
         } else if (fieldMap.containsKey(key)) {

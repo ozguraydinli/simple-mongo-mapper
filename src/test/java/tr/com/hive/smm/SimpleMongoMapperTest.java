@@ -295,8 +295,6 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals("1", document(document.get("varMapOfEnumString")).get(MyEnum.En1.name()));
     Assert.assertNull(document.get("varClassB2"));
     Assert.assertNull(document.get("varMapOfString2"));
-
-    System.out.println(document.get("refClassB"));
   }
 
   @Test
@@ -413,6 +411,24 @@ public class SimpleMongoMapperTest {
     Assert.assertEquals(1, ((ArrayList<DBRef>) document.get("refListOfClassA")).size());
     Assert.assertEquals(innerId, ((ArrayList<DBRef>) document.get("refListOfClassA")).get(0).getId());
 //    Assert.assertEquals("field valuea", clazz.stringField);
+  }
+
+
+  @Test
+  public void test_mappingOfFieldName_id() {
+    Document document = new Document();
+    document.put("_id", new ObjectId());
+
+    Document innerDocument = new Document();
+    ObjectId innerIdValue = new ObjectId();
+    innerDocument.put("_id", innerIdValue);
+
+    document.put("varClazzB2", innerDocument);
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
+
+    Assert.assertNotNull(classA.varClazzB2._id);
   }
 
   protected static Document document(Object obj) {
