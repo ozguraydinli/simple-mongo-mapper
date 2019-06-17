@@ -223,6 +223,26 @@ public class DocumentConverter<T> extends AbstractConverter implements Converter
           mappedField.setRef(true);
         } else if (field.isAnnotationPresent(MongoId.class)) {
           mappedField.setIsId(true);
+
+          MongoId mongoIdAnnotation = field.getAnnotation(MongoId.class);
+          String mongoIdAnnotationValue = mongoIdAnnotation.value();
+
+          mappedField.setMongoIdValue(mongoIdAnnotationValue);
+        } else if (field.isAnnotationPresent(MongoCustomConverter.class)) {
+          mappedField.setHasCustomConverter(true);
+
+          MongoCustomConverter annotation = field.getAnnotation(MongoCustomConverter.class);
+          Class<? extends Converter> clazz = annotation.value();
+          if (clazz == EmptyConverter.class) {
+            Class<?> converterClass = annotation.converterClass();
+            if (converterClass == EmptyConverter.class) {
+              throw new MappingException("value or converterClass must be set for MongoCustomConverter. " + key);
+            }
+
+            mappedField.setCustomConverter(converterClass);
+          } else {
+            mappedField.setCustomConverter(clazz);
+          }
         }
 
         if (field.isAnnotationPresent(MongoField.class)) {
