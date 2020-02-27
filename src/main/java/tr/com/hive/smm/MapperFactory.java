@@ -2,6 +2,7 @@ package tr.com.hive.smm;
 
 import com.mongodb.DBRef;
 
+import org.bson.BsonNull;
 import org.bson.BsonUndefined;
 import org.bson.Document;
 import org.bson.types.Decimal128;
@@ -124,6 +125,8 @@ public class MapperFactory {
         } else if (isKnownType(aClass)) {
           if (aClass == value.getClass()) {
             return new PrimitiveConverter(this, key, aClass);
+          } else if (value instanceof BsonNull) {
+            return new EmptyConverter();
           } else {
             throw new MappingException("Unknown primitive type: " + value.getClass().getName());
           }

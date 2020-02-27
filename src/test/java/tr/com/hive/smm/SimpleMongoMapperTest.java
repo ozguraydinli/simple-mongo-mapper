@@ -5,10 +5,7 @@ import com.google.common.collect.Maps;
 
 import com.mongodb.DBRef;
 
-import org.bson.BsonDocument;
-import org.bson.BsonUndefined;
-import org.bson.BsonValue;
-import org.bson.Document;
+import org.bson.*;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
@@ -429,6 +426,20 @@ public class SimpleMongoMapperTest {
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
     Assert.assertNotNull(classA.varClazzB2._id);
+  }
+
+  @Test
+  public void test_BoxedPrimitiveMapping_nullField() {
+    Document document = new Document();
+    document.put("_id", new ObjectId());
+    document.put("varBoxedInt", null);
+    document.put("varBoxedBoolean", BsonNull.VALUE);
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
+
+    Assert.assertNull(classA.varBoxedInt);
+    Assert.assertNull(classA.varBoxedBoolean);
   }
 
   protected static Document document(Object obj) {

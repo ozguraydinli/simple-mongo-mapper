@@ -46,6 +46,8 @@ public class ClassA extends ClassASuper {
 
   public Integer varBoxedInt;
 
+  public Boolean varBoxedBoolean;
+
   public Date varDate;
 
   public ObjectId varObjectId;
