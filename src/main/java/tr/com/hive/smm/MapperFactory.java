@@ -51,7 +51,7 @@ public class MapperFactory {
 
     try {
 
-      if (value == null || value instanceof BsonUndefined) {
+      if (value == null || value instanceof BsonUndefined || value instanceof BsonNull) {
         return new EmptyConverter();
       }
 
@@ -125,8 +125,6 @@ public class MapperFactory {
         } else if (isKnownType(aClass)) {
           if (aClass == value.getClass()) {
             return new PrimitiveConverter(this, key, aClass);
-          } else if (value instanceof BsonNull) {
-            return new EmptyConverter();
           } else {
             throw new MappingException("Unknown primitive type: " + value.getClass().getName());
           }

@@ -429,17 +429,19 @@ public class SimpleMongoMapperTest {
   }
 
   @Test
-  public void test_BoxedPrimitiveMapping_nullField() {
+  public void test_ReturnedDocumentHasBsonNullFields() {
     Document document = new Document();
     document.put("_id", new ObjectId());
     document.put("varBoxedInt", null);
     document.put("varBoxedBoolean", BsonNull.VALUE);
+    document.put("varEnum", BsonNull.VALUE);
 
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
     Assert.assertNull(classA.varBoxedInt);
     Assert.assertNull(classA.varBoxedBoolean);
+    Assert.assertNull(classA.varEnum);
   }
 
   protected static Document document(Object obj) {
