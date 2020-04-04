@@ -1,11 +1,13 @@
 package tr.com.hive.smm.model;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
@@ -27,6 +29,8 @@ public class ClassB {
 
   public List<String> varListOfString;
 
+  public HashMap<Integer, MyEnum> varMapOfIntToEnum;
+
   public static Document createDocument(int i, Date date) {
     Document document = new Document();
 
@@ -36,6 +40,12 @@ public class ClassB {
     document.put("varDate", date);
     document.put("varEnum", MyEnum.En2.name());
     document.put("varListOfString", Lists.newArrayList("b" + i, "bb" + i));
+
+    Document documentMap = new Document();
+    documentMap.put("1", MyEnum.En1.name());
+    documentMap.put("2", MyEnum.En2.name());
+
+    document.put("varMapOfIntToEnum", documentMap);
 
     return document;
   }

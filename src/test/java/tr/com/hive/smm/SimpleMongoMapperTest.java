@@ -203,6 +203,9 @@ public class SimpleMongoMapperTest {
     document.put("varMapOfListOfClassB", createDocumentForMapListOfClassB());
     document.put("varMapOfMapOfString", createDocumentForMapOfMapOfString());
 
+    // add embedded classB
+    document.put("varClassB", ClassB.createDocument(1, new Date()));
+
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
@@ -240,6 +243,9 @@ public class SimpleMongoMapperTest {
 
     Assert.assertEquals(2, classA.varMapOfMapOfString.size());
     Assert.assertEquals("1", classA.varMapOfMapOfString.get("a").get("a"));
+
+    Assert.assertEquals(2, classA.varClassB.varMapOfIntToEnum.size());
+    Assert.assertEquals(MyEnum.En1, classA.varClassB.varMapOfIntToEnum.get(1));
   }
 
   @SuppressWarnings("unchecked")
