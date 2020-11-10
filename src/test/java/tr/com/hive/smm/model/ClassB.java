@@ -1,7 +1,6 @@
 package tr.com.hive.smm.model;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
