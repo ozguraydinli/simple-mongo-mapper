@@ -13,6 +13,7 @@ import org.bson.Document;
 import java.util.List;
 import java.util.Map;
 
+import tr.com.hive.smm.mapping.Converter;
 import tr.com.hive.smm.mapping.DocumentConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 
@@ -23,6 +24,7 @@ import tr.com.hive.smm.mapping.annotation.MongoEntity;
 public class SimpleMongoMapper {
 
   private final Map<Class<?>, MappedClass> mappedClassCache = Maps.newConcurrentMap();
+  private final Map<Class<?>, Converter> registeredTypes = Maps.newConcurrentMap();
 
   private MongoDatabase mongoDatabase;
 
@@ -38,6 +40,18 @@ public class SimpleMongoMapper {
 
   public boolean isMongoEntity(Class<?> aClass) {
     return mappedClassCache.containsKey(aClass);
+  }
+
+  public void registerType(Class<?> clazz, Converter converter) {
+    registeredTypes.put(clazz, converter);
+  }
+
+  public boolean isRegisteredType(Class<?> clazz) {
+    return registeredTypes.containsKey(clazz);
+  }
+
+  public Converter getConverter(Class<?> aClass) {
+    return registeredTypes.get(aClass);
   }
 
   public void addEntity(Object obj) {

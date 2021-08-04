@@ -5,7 +5,12 @@ import com.google.common.collect.Maps;
 
 import com.mongodb.DBRef;
 
-import org.bson.*;
+import org.bson.BsonDateTime;
+import org.bson.BsonDocument;
+import org.bson.BsonNull;
+import org.bson.BsonUndefined;
+import org.bson.BsonValue;
+import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.Assert;
@@ -20,7 +25,12 @@ import tr.com.hive.smm.mapping.MappingException;
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoId;
-import tr.com.hive.smm.model.*;
+import tr.com.hive.smm.model.ClassA;
+import tr.com.hive.smm.model.ClassB;
+import tr.com.hive.smm.model.ClassC;
+import tr.com.hive.smm.model.MyComplexEnum;
+import tr.com.hive.smm.model.MyEnum;
+import tr.com.hive.smm.model.PrivateConsClazz;
 
 /**
  * Created by ozgur on 4/4/17.
@@ -448,6 +458,85 @@ public class SimpleMongoMapperTest {
     Assert.assertNull(classA.varBoxedInt);
     Assert.assertNull(classA.varBoxedBoolean);
     Assert.assertNull(classA.varEnum);
+  }
+
+  @Test
+  public void test_registerType_decode() {
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+
+    Converter converter = new CustomDateConverter();
+    simpleMongoMapper.registerType(Date.class, converter);
+
+    Document document = new Document();
+    document.put("_id", new ObjectId());
+
+    Date now = new Date();
+    document.put("varDate", now);
+
+    ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
+
+    Assert.assertEquals(now.getYear() + 1, classA.varDate.getYear());
+  }
+
+  @Test
+  public void test_registerType_encodeToDocument() {
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+
+    Converter converter = new CustomDateConverter();
+    simpleMongoMapper.registerType(Date.class, converter);
+
+    ClassA classA = new ClassA();
+    classA.id = new ObjectId();
+
+    Date now = new Date();
+    classA.varDate = now;
+
+    Document document = simpleMongoMapper.toDocument(classA);
+
+    Assert.assertEquals(now.getYear() + 1, ((Date) document.get("varDate")).getYear());
+  }
+
+  // Custom Date converter, increments year by 1
+  private static class CustomDateConverter implements Converter {
+
+    @Override
+    public BsonValue encode(Object obj) throws MappingException {
+      Class<?> clzz = obj.getClass();
+      if (Date.class.isAssignableFrom(clzz) || Date.class == clzz) {
+        Date date = new Date(((Date) obj).getTime());
+        date.setYear(date.getYear() + 1);
+
+        return new BsonDateTime(date.getTime());
+      }
+
+      throw new IllegalArgumentException("Date expected!");
+    }
+
+    @Override
+    public Object decode(Object obj) throws MappingException {
+      Class<?> clzz = obj.getClass();
+      if (Date.class.isAssignableFrom(clzz) || Date.class == clzz) {
+        Date date = new Date(((Date) obj).getTime());
+        date.setYear(date.getYear() + 1);
+        return date;
+      }
+
+      return obj;
+    }
+
+    @Override
+    public Object encodeToDocument(Object obj) throws MappingException {
+      Class<?> clzz = obj.getClass();
+      if (Date.class.isAssignableFrom(clzz) || Date.class == clzz) {
+        Date date = new Date(((Date) obj).getTime());
+        date.setYear(date.getYear() + 1);
+
+        return date;
+      }
+
+      throw new IllegalArgumentException("Date expected!");
+    }
+
   }
 
   protected static Document document(Object obj) {

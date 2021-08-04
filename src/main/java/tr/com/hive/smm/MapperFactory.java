@@ -17,7 +17,20 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import tr.com.hive.smm.mapping.*;
+import tr.com.hive.smm.mapping.BigDecimalConverter;
+import tr.com.hive.smm.mapping.CollectionConverter;
+import tr.com.hive.smm.mapping.Converter;
+import tr.com.hive.smm.mapping.DocumentConverter;
+import tr.com.hive.smm.mapping.EmptyConverter;
+import tr.com.hive.smm.mapping.EnumConverter;
+import tr.com.hive.smm.mapping.MapConverter;
+import tr.com.hive.smm.mapping.MappedField;
+import tr.com.hive.smm.mapping.MapperUtil;
+import tr.com.hive.smm.mapping.MappingException;
+import tr.com.hive.smm.mapping.MongoRefConverter;
+import tr.com.hive.smm.mapping.ObjectIdConverter;
+import tr.com.hive.smm.mapping.PrimitiveConverter;
+import tr.com.hive.smm.mapping.StringConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 
 /**
@@ -53,6 +66,15 @@ public class MapperFactory {
 
       if (value == null || value instanceof BsonUndefined || value instanceof BsonNull) {
         return new EmptyConverter();
+      }
+
+      if (mongoMapper.isRegisteredType(aClass)) {
+        Converter converter = mongoMapper.getConverter(aClass);
+        if (converter == null) {
+          throw new MappingException("Custom converter should be provided. " + aClass);
+        }
+
+        return converter;
       }
 
       if (mappedField.hasCustomConverter()) {
