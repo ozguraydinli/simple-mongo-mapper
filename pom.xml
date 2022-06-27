@@ -13,7 +13,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mongo-java-driver.version>4.1.0</mongo-java-driver.version>
+    <mongo-java-driver.version>4.1.2</mongo-java-driver.version>
     <guava.version>28.2-jre</guava.version>
     <junit.version>4.13.1</junit.version>
     <javassist.version>3.21.0-GA</javassist.version>
