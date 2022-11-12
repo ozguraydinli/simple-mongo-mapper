@@ -25,12 +25,7 @@ import tr.com.hive.smm.mapping.MappingException;
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoId;
-import tr.com.hive.smm.model.ClassA;
-import tr.com.hive.smm.model.ClassB;
-import tr.com.hive.smm.model.ClassC;
-import tr.com.hive.smm.model.MyComplexEnum;
-import tr.com.hive.smm.model.MyEnum;
-import tr.com.hive.smm.model.PrivateConsClazz;
+import tr.com.hive.smm.model.*;
 
 /**
  * Created by ozgur on 4/4/17.
@@ -340,6 +335,21 @@ public class SimpleMongoMapperTest {
     classA.varListOfClassB_MongoField = Lists.newArrayList(new ClassB(id));
     document = simpleMongoMapper.toDocument(classA);
     Assert.assertEquals(id, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).get(0).getObjectId("id"));
+  }
+
+  @Test
+  public void test_MoreComplexEnum() {
+    ClassWithMoreComplexEnum classWithMoreComplexEnum = new ClassWithMoreComplexEnum();
+    classWithMoreComplexEnum.varMoreComplexEnum = MyMoreComplexEnum.MoreComplexEn1;
+
+    SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
+    BsonValue bsonValue = simpleMongoMapper.toBsonValue(classWithMoreComplexEnum);
+
+    BsonDocument document = bsonValue.asDocument();
+
+    Assert.assertEquals(MyMoreComplexEnum.MoreComplexEn1, MyMoreComplexEnum.valueOf(document.getString("varMoreComplexEnum").getValue()));
+
+    Assert.assertEquals(MyMoreComplexEnum.MoreComplexEn1.name(), simpleMongoMapper.toBsonValue(MyMoreComplexEnum.MoreComplexEn1).asString().getValue());
   }
 
   @SuppressWarnings("unchecked")

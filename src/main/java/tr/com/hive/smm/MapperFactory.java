@@ -90,7 +90,7 @@ public class MapperFactory {
       }
 
       if (value instanceof String || value instanceof Enum) {
-        if (aClass.isEnum()) {
+        if (aClass.isEnum() || (aClass.getEnclosingClass() != null && aClass.getEnclosingClass().isEnum())) {
           return new EnumConverter(this, key, aClass);
         } else if (aClass == String.class) {
           return new StringConverter(this, key, aClass);
