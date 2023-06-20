@@ -13,12 +13,11 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mongo-java-driver.version>4.7.1</mongo-java-driver.version>
-    <guava.version>28.2-jre</guava.version>
-    <junit.version>4.13.1</junit.version>
-    <javassist.version>3.21.0-GA</javassist.version>
-    <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
-    <maven.compiler.plugin.version>3.6.1</maven.compiler.plugin.version>
+    <mongo-java-driver.version>4.9.1</mongo-java-driver.version>
+    <guava.version>32.0.1-jre</guava.version>
+    <junit.version>5.9.3</junit.version>
+    <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
+    <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
   </properties>
 
   <build>
@@ -38,8 +37,9 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${maven.compiler.plugin.version}</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>17</source>
+					<target>17</target>
+					<release>17</release>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -65,8 +65,8 @@
 			<version>${mongo-java-driver.version}</version>
 		</dependency>
     <dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>

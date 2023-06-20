@@ -13,8 +13,7 @@ import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,6 +25,10 @@ import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.model.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Created by ozgur on 4/4/17.
@@ -62,22 +65,22 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertEquals(new ObjectId(id.toString()), classA.id);
-    Assert.assertEquals("myVal", classA.varString);
-    Assert.assertNull(classA.varNullString);
-    Assert.assertEquals(MyEnum.En1, classA.varEnum);
-    Assert.assertEquals(1, classA.varInt);
-    Assert.assertEquals(Integer.valueOf(1), classA.varBoxedInt);
-    Assert.assertEquals(new Date(now.getTime()), classA.varDate);
-    Assert.assertEquals(new ObjectId(varId.toString()), classA.varObjectId);
-    Assert.assertEquals(new ObjectId(classBId.toString()), classA.refClassB.id);
-    Assert.assertEquals("s1", classA.varClassB.varString);
-    Assert.assertEquals(1, classA.varClassB.varInt);
-    Assert.assertEquals(new Date(now.getTime()), classA.varClassB.varDate);
-    Assert.assertEquals(MyEnum.En2, classA.varClassB.varEnum);
-    Assert.assertNull(classA.varClassB2);
-    Assert.assertNull(classA.varClazzB2);
-    Assert.assertNull(classA.varBsonUndefined);
+    assertEquals(new ObjectId(id.toString()), classA.id);
+    assertEquals("myVal", classA.varString);
+    assertNull(classA.varNullString);
+    assertEquals(MyEnum.En1, classA.varEnum);
+    assertEquals(1, classA.varInt);
+    assertEquals(Integer.valueOf(1), classA.varBoxedInt);
+    assertEquals(new Date(now.getTime()), classA.varDate);
+    assertEquals(new ObjectId(varId.toString()), classA.varObjectId);
+    assertEquals(new ObjectId(classBId.toString()), classA.refClassB.id);
+    assertEquals("s1", classA.varClassB.varString);
+    assertEquals(1, classA.varClassB.varInt);
+    assertEquals(new Date(now.getTime()), classA.varClassB.varDate);
+    assertEquals(MyEnum.En2, classA.varClassB.varEnum);
+    assertNull(classA.varClassB2);
+    assertNull(classA.varClazzB2);
+    assertNull(classA.varBsonUndefined);
   }
 
   @Test
@@ -89,8 +92,8 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertEquals("myVal", classA.varStringSuper);
-//    Assert.assertEquals(1, classA.varIntSuper);
+    assertEquals("myVal", classA.varStringSuper);
+//    assertEquals(1, classA.varIntSuper);
   }
 
   @Test
@@ -103,7 +106,7 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertEquals(new BigDecimal(varBigDecimal.toBigInteger()), classA.varBigDecimal);
+    assertEquals(new BigDecimal(varBigDecimal.toBigInteger()), classA.varBigDecimal);
   }
 
   @Test
@@ -145,42 +148,42 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertEquals(new ObjectId(id.toString()), classA.id);
-    Assert.assertEquals(3, classA.varListOfString.size());
-    Assert.assertEquals("a1", classA.varListOfString.get(0));
-    Assert.assertEquals(2, classA.varListOfInteger1.size());
-    Assert.assertEquals(Integer.valueOf(1), classA.varListOfInteger1.get(0));
-    Assert.assertEquals(2, classA.varListOfInteger2.size());
-    Assert.assertEquals(Integer.valueOf(3), classA.varListOfInteger2.get(0));
-    Assert.assertEquals(1, classA.varListOfDate.size());
-    Assert.assertEquals(2, classA.varListOfEnum.size());
-    Assert.assertEquals(MyEnum.En1, classA.varListOfEnum.get(0));
-    Assert.assertEquals(2, classA.varListOfObjectId.size());
-    Assert.assertEquals(new ObjectId(id1.toString()), classA.varListOfObjectId.get(0));
-    Assert.assertEquals(2, classA.varListOfClassB.size());
-    Assert.assertEquals("s1", classA.varListOfClassB.get(0).varString);
-    Assert.assertEquals(MyEnum.En2, classA.varListOfClassB.get(0).varEnum);
-    Assert.assertEquals(2, classA.varListOfClassB.get(0).varListOfString.size());
-    Assert.assertEquals("b1", classA.varListOfClassB.get(0).varListOfString.get(0));
-    Assert.assertEquals(2, classA.varListOfListOfString.size());
-    Assert.assertEquals(3, classA.varListOfListOfString.get(0).size());
-    Assert.assertEquals("a11", classA.varListOfListOfString.get(0).get(0));
-    Assert.assertEquals(2, classA.varListOfListOfObjectId.size());
-    Assert.assertEquals(2, classA.varListOfListOfObjectId.get(0).size());
-    Assert.assertEquals(new ObjectId(id11.toString()), classA.varListOfListOfObjectId.get(0).get(0));
-    Assert.assertEquals(2, classA.varListOfListOfClassB.size());
-    Assert.assertEquals(1, classA.varListOfListOfClassB.get(0).size());
-    Assert.assertEquals("s1", classA.varListOfListOfClassB.get(0).get(0).varString);
-    Assert.assertEquals(4, classA.refListOfClassB.size());
-    Assert.assertEquals(new ObjectId(classBId.toString()), classA.refListOfClassB.get(0).id);
+    assertEquals(new ObjectId(id.toString()), classA.id);
+    assertEquals(3, classA.varListOfString.size());
+    assertEquals("a1", classA.varListOfString.get(0));
+    assertEquals(2, classA.varListOfInteger1.size());
+    assertEquals(Integer.valueOf(1), classA.varListOfInteger1.get(0));
+    assertEquals(2, classA.varListOfInteger2.size());
+    assertEquals(Integer.valueOf(3), classA.varListOfInteger2.get(0));
+    assertEquals(1, classA.varListOfDate.size());
+    assertEquals(2, classA.varListOfEnum.size());
+    assertEquals(MyEnum.En1, classA.varListOfEnum.get(0));
+    assertEquals(2, classA.varListOfObjectId.size());
+    assertEquals(new ObjectId(id1.toString()), classA.varListOfObjectId.get(0));
+    assertEquals(2, classA.varListOfClassB.size());
+    assertEquals("s1", classA.varListOfClassB.get(0).varString);
+    assertEquals(MyEnum.En2, classA.varListOfClassB.get(0).varEnum);
+    assertEquals(2, classA.varListOfClassB.get(0).varListOfString.size());
+    assertEquals("b1", classA.varListOfClassB.get(0).varListOfString.get(0));
+    assertEquals(2, classA.varListOfListOfString.size());
+    assertEquals(3, classA.varListOfListOfString.get(0).size());
+    assertEquals("a11", classA.varListOfListOfString.get(0).get(0));
+    assertEquals(2, classA.varListOfListOfObjectId.size());
+    assertEquals(2, classA.varListOfListOfObjectId.get(0).size());
+    assertEquals(new ObjectId(id11.toString()), classA.varListOfListOfObjectId.get(0).get(0));
+    assertEquals(2, classA.varListOfListOfClassB.size());
+    assertEquals(1, classA.varListOfListOfClassB.get(0).size());
+    assertEquals("s1", classA.varListOfListOfClassB.get(0).get(0).varString);
+    assertEquals(4, classA.refListOfClassB.size());
+    assertEquals(new ObjectId(classBId.toString()), classA.refListOfClassB.get(0).id);
 
-    Assert.assertEquals(null, classA.refListOfClassBEmpty);
+    assertEquals(null, classA.refListOfClassBEmpty);
 
-    Assert.assertEquals(2, classA.varSetOfEnum.size());
-    Assert.assertEquals(true, classA.varSetOfEnum.contains(MyEnum.En1));
+    assertEquals(2, classA.varSetOfEnum.size());
+    assertEquals(true, classA.varSetOfEnum.contains(MyEnum.En1));
 
-    Assert.assertEquals(3, classA.varSetOfString.size());
-    Assert.assertEquals(true, classA.varSetOfString.contains("a1"));
+    assertEquals(3, classA.varSetOfString.size());
+    assertEquals(true, classA.varSetOfString.contains("a1"));
   }
 
   @Test
@@ -214,43 +217,43 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertEquals(2, classA.varMapOfString.size());
-    Assert.assertEquals("1", classA.varMapOfString.get("a"));
+    assertEquals(2, classA.varMapOfString.size());
+    assertEquals("1", classA.varMapOfString.get("a"));
 
-    Assert.assertEquals(2, classA.varMapOfEnumString.size());
-    Assert.assertEquals("1", classA.varMapOfEnumString.get(MyEnum.En1));
+    assertEquals(2, classA.varMapOfEnumString.size());
+    assertEquals("1", classA.varMapOfEnumString.get(MyEnum.En1));
 
-    Assert.assertEquals(2, classA.varMapOfIntegerString.size());
-    Assert.assertEquals("1", classA.varMapOfIntegerString.get(1));
+    assertEquals(2, classA.varMapOfIntegerString.size());
+    assertEquals("1", classA.varMapOfIntegerString.get(1));
 
-    Assert.assertEquals(2, classA.varMapOfObjectIdString.size());
-    Assert.assertEquals("1", classA.varMapOfObjectIdString.get(id1));
-    Assert.assertEquals(2, classA.varMapOfObjectId.size());
-    Assert.assertEquals(new ObjectId(id1.toString()), classA.varMapOfObjectId.get("a"));
+    assertEquals(2, classA.varMapOfObjectIdString.size());
+    assertEquals("1", classA.varMapOfObjectIdString.get(id1));
+    assertEquals(2, classA.varMapOfObjectId.size());
+    assertEquals(new ObjectId(id1.toString()), classA.varMapOfObjectId.get("a"));
 
-    Assert.assertEquals(2, classA.varMapOfDate.size());
-    Assert.assertEquals(new Date(now.getTime()), classA.varMapOfDate.get("a"));
+    assertEquals(2, classA.varMapOfDate.size());
+    assertEquals(new Date(now.getTime()), classA.varMapOfDate.get("a"));
 
-    Assert.assertEquals(2, classA.varMapOfClassB.size());
-    Assert.assertEquals("s1", classA.varMapOfClassB.get("a").varString);
-    Assert.assertEquals(2, classA.varMapOfClassB.get("a").varListOfString.size());
-    Assert.assertEquals("b1", classA.varMapOfClassB.get("a").varListOfString.get(0));
-    Assert.assertNotNull(classA.varMapOfClassB.get("a").id);
+    assertEquals(2, classA.varMapOfClassB.size());
+    assertEquals("s1", classA.varMapOfClassB.get("a").varString);
+    assertEquals(2, classA.varMapOfClassB.get("a").varListOfString.size());
+    assertEquals("b1", classA.varMapOfClassB.get("a").varListOfString.get(0));
+    assertNotNull(classA.varMapOfClassB.get("a").id);
 
-    Assert.assertEquals(2, classA.varMapOfListOfString.size());
-    Assert.assertEquals("a1", classA.varMapOfListOfString.get("a").get(0));
+    assertEquals(2, classA.varMapOfListOfString.size());
+    assertEquals("a1", classA.varMapOfListOfString.get("a").get(0));
 
-    Assert.assertEquals(2, classA.varMapOfListOfDate.size());
-    Assert.assertEquals(new Date(now.getTime()), classA.varMapOfListOfDate.get("a").get(0));
+    assertEquals(2, classA.varMapOfListOfDate.size());
+    assertEquals(new Date(now.getTime()), classA.varMapOfListOfDate.get("a").get(0));
 
-    Assert.assertEquals(2, classA.varMapOfListOfClassB.size());
-    Assert.assertEquals("s1", classA.varMapOfListOfClassB.get("a").get(0).varString);
+    assertEquals(2, classA.varMapOfListOfClassB.size());
+    assertEquals("s1", classA.varMapOfListOfClassB.get("a").get(0).varString);
 
-    Assert.assertEquals(2, classA.varMapOfMapOfString.size());
-    Assert.assertEquals("1", classA.varMapOfMapOfString.get("a").get("a"));
+    assertEquals(2, classA.varMapOfMapOfString.size());
+    assertEquals("1", classA.varMapOfMapOfString.get("a").get("a"));
 
-    Assert.assertEquals(2, classA.varClassB.varMapOfIntToEnum.size());
-    Assert.assertEquals(MyEnum.En1, classA.varClassB.varMapOfIntToEnum.get(1));
+    assertEquals(2, classA.varClassB.varMapOfIntToEnum.size());
+    assertEquals(MyEnum.En1, classA.varClassB.varMapOfIntToEnum.get(1));
   }
 
   @SuppressWarnings("unchecked")
@@ -282,27 +285,27 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     Document document = simpleMongoMapper.toDocument(classA);
 
-    Assert.assertEquals(new ObjectId(id.toString()), document.getObjectId("_id"));
-    Assert.assertNull(document.get("id"));
+    assertEquals(new ObjectId(id.toString()), document.getObjectId("_id"));
+    assertNull(document.get("id"));
 
-    Assert.assertEquals("s1", document.getString("varString"));
-    Assert.assertNull(document.get("varNullString"));
+    assertEquals("s1", document.getString("varString"));
+    assertNull(document.get("varNullString"));
 
-    Assert.assertEquals(Integer.valueOf(1), document.getInteger("varInt"));
-    Assert.assertEquals(Integer.valueOf(1), document.getInteger("varBoxedInt"));
-    Assert.assertEquals("En1", document.getString("varEnum"));
-    Assert.assertEquals(new Date(classA.varDate.getTime()), document.getDate("varDate"));
-    Assert.assertEquals("s1", document(document.get("varClassB")).getString("varString"));
-    Assert.assertEquals(new ObjectId(id2.toString()), document(document.get("varClassC")).getObjectId("Id"));
-    Assert.assertEquals(Integer.valueOf(1), document(document.get("varClassB")).getInteger("varInt"));
-    Assert.assertEquals(new Date(classA.varClassB.varDate.getTime()), document(document.get("varClassB")).getDate("varDate"));
-    Assert.assertEquals("En2", document(document.get("varClassB")).getString("varEnum"));
-    Assert.assertEquals(2, ((ArrayList<String>) document(document.get("varClassB")).get("varListOfString")).size());
-    Assert.assertEquals("bb1", ((ArrayList<String>) document(document.get("varClassB")).get("varListOfString")).get(1));
-    Assert.assertEquals("1", document(document.get("varMapOfString")).get("a"));
-    Assert.assertEquals("1", document(document.get("varMapOfEnumString")).get(MyEnum.En1.name()));
-    Assert.assertNull(document.get("varClassB2"));
-    Assert.assertNull(document.get("varMapOfString2"));
+    assertEquals(Integer.valueOf(1), document.getInteger("varInt"));
+    assertEquals(Integer.valueOf(1), document.getInteger("varBoxedInt"));
+    assertEquals("En1", document.getString("varEnum"));
+    assertEquals(new Date(classA.varDate.getTime()), document.getDate("varDate"));
+    assertEquals("s1", document(document.get("varClassB")).getString("varString"));
+    assertEquals(new ObjectId(id2.toString()), document(document.get("varClassC")).getObjectId("Id"));
+    assertEquals(Integer.valueOf(1), document(document.get("varClassB")).getInteger("varInt"));
+    assertEquals(new Date(classA.varClassB.varDate.getTime()), document(document.get("varClassB")).getDate("varDate"));
+    assertEquals("En2", document(document.get("varClassB")).getString("varEnum"));
+    assertEquals(2, ((ArrayList<String>) document(document.get("varClassB")).get("varListOfString")).size());
+    assertEquals("bb1", ((ArrayList<String>) document(document.get("varClassB")).get("varListOfString")).get(1));
+    assertEquals("1", document(document.get("varMapOfString")).get("a"));
+    assertEquals("1", document(document.get("varMapOfEnumString")).get(MyEnum.En1.name()));
+    assertNull(document.get("varClassB2"));
+    assertNull(document.get("varMapOfString2"));
   }
 
   @Test
@@ -313,7 +316,7 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     Document document = simpleMongoMapper.toDocument(classA);
 
-    Assert.assertEquals(new BigDecimal(classA.varBigDecimal.toBigInteger()), ((Decimal128) document.get("varBigDecimal")).bigDecimalValue());
+    assertEquals(new BigDecimal(classA.varBigDecimal.toBigInteger()), ((Decimal128) document.get("varBigDecimal")).bigDecimalValue());
   }
 
   @SuppressWarnings("unchecked")
@@ -325,16 +328,16 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     Document document = simpleMongoMapper.toDocument(classA);
 
-    Assert.assertEquals(null, document.get("varListOfClassB_MongoField"));
+    assertEquals(null, document.get("varListOfClassB_MongoField"));
 
     classA.varListOfClassB_MongoField = Lists.newArrayList();
     document = simpleMongoMapper.toDocument(classA);
-    Assert.assertEquals(0, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).size());
+    assertEquals(0, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).size());
 
     ObjectId id = new ObjectId();
     classA.varListOfClassB_MongoField = Lists.newArrayList(new ClassB(id));
     document = simpleMongoMapper.toDocument(classA);
-    Assert.assertEquals(id, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).get(0).getObjectId("id"));
+    assertEquals(id, ((ArrayList<Document>) document.get("varListOfClassB_MongoField")).get(0).getObjectId("id"));
   }
 
   @Test
@@ -347,9 +350,9 @@ public class SimpleMongoMapperTest {
 
     BsonDocument document = bsonValue.asDocument();
 
-    Assert.assertEquals(MyMoreComplexEnum.MoreComplexEn1, MyMoreComplexEnum.valueOf(document.getString("varMoreComplexEnum").getValue()));
+    assertEquals(MyMoreComplexEnum.MoreComplexEn1, MyMoreComplexEnum.valueOf(document.getString("varMoreComplexEnum").getValue()));
 
-    Assert.assertEquals(MyMoreComplexEnum.MoreComplexEn1.name(), simpleMongoMapper.toBsonValue(MyMoreComplexEnum.MoreComplexEn1).asString().getValue());
+    assertEquals(MyMoreComplexEnum.MoreComplexEn1.name(), simpleMongoMapper.toBsonValue(MyMoreComplexEnum.MoreComplexEn1).asString().getValue());
   }
 
   @SuppressWarnings("unchecked")
@@ -371,14 +374,14 @@ public class SimpleMongoMapperTest {
 
     BsonDocument document = bsonValue.asDocument();
 
-    Assert.assertEquals("s1", document.getString("varString").getValue());
-    Assert.assertEquals(classA.varDate.getTime(), document.getDateTime("varDate").getValue());
-    Assert.assertEquals(MyComplexEnum.ComplexEn1, MyComplexEnum.valueOf(document.getString("varComplexEnum").getValue()));
-    Assert.assertEquals(MyComplexEnum.ComplexEn2, MyComplexEnum.valueOf(document.getArray("varListOfComplexEnum").get(1).asString().getValue()));
+    assertEquals("s1", document.getString("varString").getValue());
+    assertEquals(classA.varDate.getTime(), document.getDateTime("varDate").getValue());
+    assertEquals(MyComplexEnum.ComplexEn1, MyComplexEnum.valueOf(document.getString("varComplexEnum").getValue()));
+    assertEquals(MyComplexEnum.ComplexEn2, MyComplexEnum.valueOf(document.getArray("varListOfComplexEnum").get(1).asString().getValue()));
 
-    Assert.assertEquals(idOfClassB, document.get("varMapOfClassB").asDocument().get("a").asDocument().getObjectId("id").getValue());
+    assertEquals(idOfClassB, document.get("varMapOfClassB").asDocument().get("a").asDocument().getObjectId("id").getValue());
 
-    Assert.assertEquals(MyComplexEnum.ComplexEn1.name(), simpleMongoMapper.toBsonValue(MyComplexEnum.ComplexEn1).asString().getValue());
+    assertEquals(MyComplexEnum.ComplexEn1.name(), simpleMongoMapper.toBsonValue(MyComplexEnum.ComplexEn1).asString().getValue());
   }
 
   @Test
@@ -389,8 +392,8 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     PrivateConsClazz clazz = simpleMongoMapper.fromDocument(document, PrivateConsClazz.class);
 
-    Assert.assertEquals(id, clazz.getId());
-    Assert.assertEquals("field value", clazz.getStringField());
+    assertEquals(id, clazz.getId());
+    assertEquals("field value", clazz.getStringField());
   }
 
   @Test
@@ -401,8 +404,8 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     CustomConverterClazz clazz = simpleMongoMapper.fromDocument(document, CustomConverterClazz.class);
 
-    Assert.assertEquals(id, clazz.id);
-    Assert.assertEquals("field valuea", clazz.stringField);
+    assertEquals(id, clazz.id);
+    assertEquals("field valuea", clazz.stringField);
   }
 
   @Test
@@ -416,8 +419,8 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     Document document = simpleMongoMapper.toDocument(classA);
 
-    Assert.assertEquals(ClassB.class.getSimpleName(), ((DBRef) document.get("refClassB")).getCollectionName());
-    Assert.assertEquals(classBId, ((DBRef) document.get("refClassB")).getId());
+    assertEquals(ClassB.class.getSimpleName(), ((DBRef) document.get("refClassB")).getCollectionName());
+    assertEquals(classBId, ((DBRef) document.get("refClassB")).getId());
   }
 
   @Test
@@ -431,9 +434,9 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     Document document = simpleMongoMapper.toDocument(classA);
 
-    Assert.assertEquals(1, ((ArrayList<DBRef>) document.get("refListOfClassA")).size());
-    Assert.assertEquals(innerId, ((ArrayList<DBRef>) document.get("refListOfClassA")).get(0).getId());
-//    Assert.assertEquals("field valuea", clazz.stringField);
+    assertEquals(1, ((ArrayList<DBRef>) document.get("refListOfClassA")).size());
+    assertEquals(innerId, ((ArrayList<DBRef>) document.get("refListOfClassA")).get(0).getId());
+//    assertEquals("field valuea", clazz.stringField);
   }
 
 
@@ -451,7 +454,7 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertNotNull(classA.varClazzB2._id);
+    assertNotNull(classA.varClazzB2._id);
   }
 
   @Test
@@ -465,9 +468,9 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertNull(classA.varBoxedInt);
-    Assert.assertNull(classA.varBoxedBoolean);
-    Assert.assertNull(classA.varEnum);
+    assertNull(classA.varBoxedInt);
+    assertNull(classA.varBoxedBoolean);
+    assertNull(classA.varEnum);
   }
 
   @Test
@@ -485,7 +488,7 @@ public class SimpleMongoMapperTest {
 
     ClassA classA = simpleMongoMapper.fromDocument(document, ClassA.class);
 
-    Assert.assertEquals(now.getYear() + 1, classA.varDate.getYear());
+    assertEquals(now.getYear() + 1, classA.varDate.getYear());
   }
 
   @Test
@@ -503,7 +506,7 @@ public class SimpleMongoMapperTest {
 
     Document document = simpleMongoMapper.toDocument(classA);
 
-    Assert.assertEquals(now.getYear() + 1, ((Date) document.get("varDate")).getYear());
+    assertEquals(now.getYear() + 1, ((Date) document.get("varDate")).getYear());
   }
 
   // Custom Date converter, increments year by 1

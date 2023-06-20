@@ -1,4 +1,4 @@
-# simple-mongo-mapper v0.5
+# simple-mongo-mapper v0.7
 
 A simple Java object mapper for MongoDB documents.
 
