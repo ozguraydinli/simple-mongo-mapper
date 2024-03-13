@@ -8,8 +8,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.ClassModel;
 import org.bson.codecs.pojo.ClassModelBuilder;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import org.reflections.Reflections;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,13 +16,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
-import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoField;
 import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoRef;
@@ -44,26 +41,29 @@ public class SimpleMapper {
     this.classLoader = Thread.currentThread().getContextClassLoader();
   }
 
-  public static SimpleMapper create() {
-    return new SimpleMapper();
+  public static SimpleMapperBuilder builder() {
+    return new SimpleMapperBuilder();
   }
 
-  public SimpleMapper forClass(Class<?> clazz) {
-    classList.add(clazz);
-    return this;
-  }
-
-  public SimpleMapper forPackage(String packageName) {
-    packages.add(packageName);
-    return this;
+  public static CodecRegistry newRegistry(CodecRegistry codecRegistry, Class<?> clazz) {
+    return CodecRegistries.fromRegistries(
+      codecRegistry,
+      CodecRegistries.fromProviders(
+        PojoCodecProvider.builder()
+                         .register(clazz)
+                         .build()
+      )
+    );
   }
 
   public CodecRegistry getCodecRegistry() {
+    Objects.requireNonNull(codecRegistry, "CodecRegistry not ready to use! Please build it first!");
     return codecRegistry;
   }
 
-  public CodecRegistry build() {
-    Stream<Class<?>> classesFromPackages = packages.stream().flatMap(p -> getClasses(p).stream());
+  protected SimpleMapper create() {
+    Stream<Class<?>> classesFromPackages = packages.stream()
+                                                   .flatMap(p -> SimpleMapperHelper.getClasses(classLoader, p).stream());
 
     Class<?>[] allClasses = Stream.concat(classesFromPackages, classList.stream())
                                   .collect(Collectors.toUnmodifiableSet())
@@ -84,7 +84,7 @@ public class SimpleMapper {
       )
     );
 
-    return codecRegistry;
+    return this;
   }
 
   private ClassModel<?>[] getCustomizedFields(Class<?>[] array, Map<String, MappedClass> mappedClasses) {
@@ -92,9 +92,13 @@ public class SimpleMapper {
 
     for (Class<?> aClass : array) {
       Constructor<?>[] declaredConstructors = aClass.getDeclaredConstructors();
-      Optional<Constructor<?>> first = Arrays.stream(declaredConstructors).filter(c -> c.getParameterCount() == 0).findFirst();
-      Object dummyInstance = first.map(ReflectionUtils::createInstance)
-                                  .orElseThrow(() -> new RuntimeException("Default constructor is mandatory!"));
+      Optional<Constructor<?>> first = Arrays.stream(declaredConstructors)
+                                             .filter(c -> c.getParameterCount() == 0)
+                                             .peek(c -> c.setAccessible(true))
+                                             .findFirst();
+      Object dummyInstance = first
+        .map(ReflectionUtils::createInstance)
+        .orElseThrow(() -> new RuntimeException("Default constructor is mandatory!"));
 
       String simpleName = aClass.getSimpleName();
       if (!mappedClasses.containsKey(simpleName)) {
@@ -174,19 +178,29 @@ public class SimpleMapper {
     return map;
   }
 
-  /*
-   *
-   * Recursively finds all classes under a package name annotated with MongoEntity.class
-   * Including nested classes.
-   *
-   * */
-  protected Set<Class<?>> getClasses(String packageName) {
-    Reflections reflections = new Reflections(
-      new ConfigurationBuilder()
-        .forPackage(packageName, classLoader)
-    );
+  public static final class SimpleMapperBuilder {
 
-    return reflections.getTypesAnnotatedWith(MongoEntity.class);
+    private final List<String> packages = new ArrayList<>();
+    private final List<Class<?>> classList = new ArrayList<>();
+
+    public SimpleMapperBuilder forClass(Class<?> clazz) {
+      classList.add(clazz);
+      return this;
+    }
+
+    public SimpleMapperBuilder forPackage(String packageName) {
+      packages.add(packageName);
+      return this;
+    }
+
+    public SimpleMapper build() {
+      SimpleMapper simpleMapper = new SimpleMapper();
+      simpleMapper.packages.addAll(packages);
+      simpleMapper.classList.addAll(classList);
+
+      return simpleMapper.create();
+    }
+
   }
 
 }

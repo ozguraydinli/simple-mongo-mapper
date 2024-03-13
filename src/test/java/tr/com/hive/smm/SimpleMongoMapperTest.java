@@ -24,11 +24,18 @@ import tr.com.hive.smm.mapping.MappingException;
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoId;
-import tr.com.hive.smm.model.*;
+import tr.com.hive.smm.model.ClassA;
+import tr.com.hive.smm.model.ClassB;
+import tr.com.hive.smm.model.ClassC;
+import tr.com.hive.smm.model.ClassWithMoreComplexEnum;
+import tr.com.hive.smm.model.MyComplexEnum;
+import tr.com.hive.smm.model.MyEnum;
+import tr.com.hive.smm.model.MyMoreComplexEnum;
+import tr.com.hive.smm.model.PrivateConsClazz;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Created by ozgur on 4/4/17.

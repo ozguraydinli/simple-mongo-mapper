@@ -11,7 +11,6 @@ import com.mongodb.client.model.Filters;
 
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.types.ObjectId;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 
@@ -25,10 +24,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import tr.com.hive.smm.model.ClassA;
 import tr.com.hive.smm.model.ClassA1;
+import tr.com.hive.smm.model.ClassA1.EmbeddedA1;
 import tr.com.hive.smm.model.ClassB;
-import tr.com.hive.smm.model.ClassWithoutMongoEntity;
 import tr.com.hive.smm.model.MyComplexEnum;
 import tr.com.hive.smm.model.MyEnum;
 
@@ -40,48 +38,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SimpleMapperTest {
 
   @Test
-  void getClasses() {
-    Set<Class<?>> classes = SimpleMapper.create().getClasses("tr.com.hive.smm");
-
-    assertTrue(classes.contains(ClassA.class));
-
-    Set<Class<?>> classes2 = SimpleMapper.create().getClasses("tr.com.hive.smm.model");
-
-    assertTrue(classes2.contains(ClassA.class));
-    assertTrue(classes2.contains(ClassB.class));
-    Assertions.assertFalse(classes2.contains(ClassWithoutMongoEntity.class));
-  }
-
-  public void withMongoClient(Consumer<MongoClient> testBody) {
-    try (MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5")) {
-
-      mongoDBContainer.withStartupTimeout(Duration.ofSeconds(180L))
-                      .start();
-
-      System.out.println("Mongodb started: " + mongoDBContainer.getConnectionString());
-
-      try (MongoClient mongoClient = MongoClients.create(
-        MongoClientSettings.builder()
-                           .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
-                           .writeConcern(WriteConcern.ACKNOWLEDGED)
-                           .build()
-      )) {
-
-        testBody.accept(mongoClient);
-      }
-    }
-  }
-
-  @Test
   void testSimpleMapper() {
     withMongoClient(mongoClient -> {
 
-      CodecRegistry codecRegistry = SimpleMapper.create()
-//                                                .forPackage("tr.com.hive.smm.model")
-                                                .forClass(ClassA1.class)
-                                                .forClass(ClassA1.EmbeddedA1.class)
-                                                .forClass(ClassB.class)
-                                                .build();
+      SimpleMapper simpleMapper = SimpleMapper.builder()
+                                              .forPackage("tr.com.hive.smm.model")
+                                              .forClass(ClassA1.class)
+                                              .forClass(EmbeddedA1.class)
+                                              .forClass(ClassB.class)
+                                              .build();
+
+      CodecRegistry codecRegistry = simpleMapper.getCodecRegistry();
 
       MongoDatabase database = mongoClient.getDatabase("sample")
                                           .withCodecRegistry(codecRegistry);
@@ -286,6 +253,26 @@ class SimpleMapperTest {
       assertNotNull(fromDb.varNestedMapWithCustomCodec.get("k1").getFirst().get("k11" + 123));
 
     });
+  }
+
+  public void withMongoClient(Consumer<MongoClient> testBody) {
+    try (MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5")) {
+
+      mongoDBContainer.withStartupTimeout(Duration.ofSeconds(180L))
+                      .start();
+
+      System.out.println("Mongodb started: " + mongoDBContainer.getConnectionString());
+
+      try (MongoClient mongoClient = MongoClients.create(
+        MongoClientSettings.builder()
+                           .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
+                           .writeConcern(WriteConcern.ACKNOWLEDGED)
+                           .build()
+      )) {
+
+        testBody.accept(mongoClient);
+      }
+    }
   }
 
 }
