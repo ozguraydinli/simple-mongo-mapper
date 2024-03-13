@@ -328,7 +328,7 @@ public class SimpleMongoMapperTest {
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
     Document document = simpleMongoMapper.toDocument(classA);
 
-    assertEquals(null, document.get("varListOfClassB_MongoField"));
+    assertNull(document.get("varListOfClassB_MongoField"));
 
     classA.varListOfClassB_MongoField = Lists.newArrayList();
     document = simpleMongoMapper.toDocument(classA);

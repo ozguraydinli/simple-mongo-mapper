@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 
 import tr.com.hive.smm.mapping.Converter;
 import tr.com.hive.smm.mapping.EmptyConverter;
+import tr.com.hive.smm.mapping2.DefaultCodec;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
@@ -19,5 +20,7 @@ public @interface MongoCustomConverter {
   Class<? extends Converter> value() default EmptyConverter.class;
 
   Class<?> converterClass() default EmptyConverter.class;
+
+  Class<?> codec() default DefaultCodec.class;
 
 }

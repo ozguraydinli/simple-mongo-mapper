@@ -20,7 +20,7 @@ import tr.com.hive.smm.mapping.annotation.MongoEntity;
 /**
  * Created by ozgur on 3/24/16.
  */
-@SuppressWarnings("unchecked")
+@Deprecated(forRemoval = true, since = "1.0")
 public class SimpleMongoMapper {
 
   private final Map<Class<?>, MappedClass> mappedClassCache = Maps.newConcurrentMap();
