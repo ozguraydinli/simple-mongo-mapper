@@ -9,15 +9,13 @@ import org.bson.codecs.pojo.ClassModel;
 import org.bson.codecs.pojo.ClassModelBuilder;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +43,7 @@ public class SimpleMapper {
     return new SimpleMapperBuilder();
   }
 
+  @SuppressWarnings("unused")
   public static CodecRegistry newRegistry(CodecRegistry codecRegistry, Class<?> clazz) {
     return CodecRegistries.fromRegistries(
       codecRegistry,
@@ -63,9 +62,12 @@ public class SimpleMapper {
 
   protected SimpleMapper create() {
     Stream<Class<?>> classesFromPackages = packages.stream()
-                                                   .flatMap(p -> SimpleMapperHelper.getClasses(classLoader, p).stream());
+                                                   .flatMap(p -> SimpleMapperHelper.getClasses(classLoader, p));
 
-    Class<?>[] allClasses = Stream.concat(classesFromPackages, classList.stream())
+    Stream<Class<?>> classesFromClassList = classList.stream()
+                                                     .flatMap(SimpleMapperHelper::getClasses);
+
+    Class<?>[] allClasses = Stream.concat(classesFromPackages, classesFromClassList)
                                   .collect(Collectors.toUnmodifiableSet())
                                   .toArray(Class<?>[]::new);
 
@@ -91,56 +93,69 @@ public class SimpleMapper {
     List<ClassModel<?>> list = new ArrayList<>();
 
     for (Class<?> aClass : array) {
-      Constructor<?>[] declaredConstructors = aClass.getDeclaredConstructors();
-      Optional<Constructor<?>> first = Arrays.stream(declaredConstructors)
-                                             .filter(c -> c.getParameterCount() == 0)
-                                             .peek(c -> c.setAccessible(true))
-                                             .findFirst();
-      Object dummyInstance = first
-        .map(ReflectionUtils::createInstance)
-        .orElseThrow(() -> new RuntimeException("Default constructor is mandatory!"));
+      try {
+        String name = aClass.getName();
+        if (!mappedClasses.containsKey(name)) {
+          throw new RuntimeException("Unkown class: " + aClass.getName());
+        }
 
-      String simpleName = aClass.getSimpleName();
-      if (!mappedClasses.containsKey(simpleName)) {
-        throw new RuntimeException("Unkown class: " + aClass.getName());
-      }
+        MappedClass mappedClass = mappedClasses.get(name);
 
-      MappedClass mappedClass = mappedClasses.get(simpleName);
+        if (mappedClass.shouldBuildClassModel()) {
+          ClassModelBuilder<?> classModelBuilder = buildClassModelBuilder(mappedClasses, aClass, mappedClass);
+          list.add(classModelBuilder.build());
+        }
 
-      if (mappedClass.shouldBuildClassModel()) {
-        ClassModelBuilder<?> classModelBuilder = buildClassModelBuilder(mappedClasses, aClass, mappedClass, dummyInstance);
-        list.add(classModelBuilder.build());
+      } catch (Exception ex) {
+        throw new RuntimeException("Cannot build class model for: " + aClass, ex);
       }
     }
 
     return list.toArray(ClassModel<?>[]::new);
   }
 
-  private static ClassModelBuilder<?> buildClassModelBuilder(Map<String, MappedClass> mappedClasses, Class<?> aClass, MappedClass mappedClass, Object dummyInstance) {
+  private static ClassModelBuilder<?> buildClassModelBuilder(Map<String, MappedClass> mappedClasses, Class<?> aClass, MappedClass mappedClass) {
     ClassModelBuilder<?> classModelBuilder = ClassModel.builder(aClass);
 
     mappedClass.getMongoRefFields().forEach(field -> {
-      classModelBuilder.getProperty(field.getName())
-                       .codec(new MongoRefCodec<>(mappedClasses, field, dummyInstance));
+      try {
+        Object dummyInstance = SimpleMapperHelper.createDummyInstance(aClass);
+        classModelBuilder.getProperty(field.getName())
+                         .codec(new MongoRefCodec<>(mappedClasses, field, dummyInstance));
+      } catch (Exception ex) {
+        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName(), ex);
+      }
     });
 
     mappedClass.getMongoTransientFields().forEach(field -> {
-      classModelBuilder.getProperty(field.getName())
-                       .readName(null)
-                       .writeName(null)
-                       .propertySerialization(p -> false);
+      try {
+        classModelBuilder.getProperty(field.getName())
+                         .readName(null)
+                         .writeName(null)
+                         .propertySerialization(p -> false);
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName());
+      }
     });
 
     mappedClass.getFieldToMongoFieldMap().forEach((field, value) -> {
-      classModelBuilder.getProperty(field.getName())
-                       .readName(value)
-                       .writeName(value);
+      try {
+        classModelBuilder.getProperty(field.getName())
+                         .readName(value)
+                         .writeName(value);
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName());
+      }
     });
 
     mappedClass.getFieldToCodecClassMap().forEach((field, clazz) -> {
-      Codec<?> instance = ReflectionUtils.createInstance(clazz, aClass);
-      classModelBuilder.getProperty(field.getName())
-                       .codec(new CustomCodec<>(aClass, instance));
+      try {
+        Codec<?> instance = ReflectionUtils.createInstance(clazz, aClass);
+        classModelBuilder.getProperty(field.getName())
+                         .codec(new CustomCodec<>(aClass, instance));
+      } catch (Exception e) {
+        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName());
+      }
     });
 
     return classModelBuilder;
@@ -150,11 +165,16 @@ public class SimpleMapper {
     Map<String, MappedClass> map = new HashMap<>();
 
     for (Class<?> aClass : array) {
-      Field[] fields = aClass.getFields();
       MappedClass mappedClass = new MappedClass(aClass);
 
-      for (Field field : fields) {
+      List<Field> allFields = ReflectionUtils.getAllFields(aClass)
+                                             .stream()
+                                             .filter(field -> !field.isSynthetic())
+                                             .filter(field -> !Modifier.isStatic(field.getModifiers()))
+                                             .filter(field -> !Modifier.isFinal(field.getModifiers()))
+                                             .toList();
 
+      for (Field field : allFields) {
         if (field.isAnnotationPresent(MongoId.class)) {
           mappedClass.setIdField(field);
         } else if (field.isAnnotationPresent(MongoRef.class)) {
@@ -172,7 +192,7 @@ public class SimpleMapper {
         }
       }
 
-      map.put(aClass.getSimpleName(), mappedClass);
+      map.put(aClass.getName(), mappedClass);
     }
 
     return map;

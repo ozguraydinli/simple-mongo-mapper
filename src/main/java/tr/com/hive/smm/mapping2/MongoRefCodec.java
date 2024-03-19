@@ -10,7 +10,10 @@ import org.bson.types.ObjectId;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -82,7 +85,7 @@ public class MongoRefCodec<T> implements Codec<T> {
       for (Object o : list) {
         Class<?> objectClass = o.getClass();
 
-        encodeOne(writer, objectClass.getSimpleName(), o);
+        encodeOne(writer, objectClass.getName(), o);
       }
 
       writer.writeEndArray();
@@ -90,15 +93,18 @@ public class MongoRefCodec<T> implements Codec<T> {
       return;
     }
 
-    encodeOne(writer, valueClass.getSimpleName(), value);
+    encodeOne(writer, valueClass.getName(), value);
   }
 
-  private void encodeOne(BsonWriter writer, String objectClass, Object o) {
+  private void encodeOne(BsonWriter writer, String clazzName, Object o) {
     writer.writeStartDocument();
 
-    writer.writeString("$ref", objectClass);
+    MappedClass mappedClass = classMap.get(clazzName);
 
-    MappedClass mappedClass = classMap.get(objectClass);
+    String simpleName = mappedClass.getMappedClass().getSimpleName();
+
+    writer.writeString("$ref", simpleName);
+
     Field idField = mappedClass.getIdField();
     ObjectId fieldValue = ReflectionUtils.getFieldValue(idField, o);
     writer.writeObjectId("$id", fieldValue);
@@ -140,7 +146,13 @@ public class MongoRefCodec<T> implements Codec<T> {
     ObjectId id = reader.readObjectId("$id");
 
     try {
-      MappedClass mappedClass = classMap.get(ref);
+      Class<?> fieldType = getType(field);
+
+      if (!fieldType.getSimpleName().equals(ref)) {
+        throw new IllegalStateException("Type mismatch fieldType: " + fieldType.getSimpleName() + " ref: " + ref);
+      }
+
+      MappedClass mappedClass = classMap.get(fieldType.getName());
 
       Class<?> clazz = mappedClass.getMappedClass();
 
@@ -156,6 +168,17 @@ public class MongoRefCodec<T> implements Codec<T> {
     } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private Class<?> getType(Field field) {
+    Class<?> fieldType = field.getType();
+
+    if (Collection.class.isAssignableFrom(fieldType)) {
+      ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+      return (Class<?>) genericType.getActualTypeArguments()[0];
+    }
+
+    return fieldType;
   }
 
 }

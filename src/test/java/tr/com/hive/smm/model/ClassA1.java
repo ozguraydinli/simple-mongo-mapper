@@ -130,12 +130,36 @@ public class ClassA1 extends ClassA1Super {
   @MongoCustomConverter(codec = MyCodec.class)
   public Map<String, List<Map<String, String>>> varNestedMapWithCustomCodec = Maps.newHashMap();
 
+  @MongoTransient
+  public EmbeddedA1WithoutAnnotation varEmbeddedA1WithoutAnnotation;
+
   @MongoEntity
   public static class EmbeddedA1 {
 
     public ObjectId id;
 
     public String varString;
+
+  }
+
+  public static class EmbeddedA1WithoutAnnotation {
+
+    @MongoTransient
+    public ObjectId attachedObjectId;
+
+    @MongoTransient
+    public String varString;
+
+  }
+
+  @MongoEntity
+  public static class SameNameEmbedded {
+
+    public ObjectId id;
+    public String vartString;
+
+    @MongoRef
+    public ClassB refClassB;
 
   }
 
