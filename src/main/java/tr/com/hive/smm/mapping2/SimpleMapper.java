@@ -44,7 +44,7 @@ public class SimpleMapper {
   }
 
   @SuppressWarnings("unused")
-  public static CodecRegistry newRegistry(CodecRegistry codecRegistry, Class<?> clazz) {
+  public static CodecRegistry createRegistry(CodecRegistry codecRegistry, Class<?>... clazz) {
     return CodecRegistries.fromRegistries(
       codecRegistry,
       CodecRegistries.fromProviders(
