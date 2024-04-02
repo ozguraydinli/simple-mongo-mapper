@@ -1,7 +1,5 @@
 package tr.com.hive.smm.model;
 
-import tr.com.hive.smm.mapping.annotation.MongoEntity;
-
 public class ClassA1Super {
 
   public String varStringSuper;

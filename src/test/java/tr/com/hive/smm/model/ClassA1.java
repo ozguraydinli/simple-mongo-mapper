@@ -3,6 +3,7 @@ package tr.com.hive.smm.model;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
@@ -132,6 +133,11 @@ public class ClassA1 extends ClassA1Super {
 
   @MongoTransient
   public EmbeddedA1WithoutAnnotation varEmbeddedA1WithoutAnnotation;
+
+  @BsonIgnore
+  public String getOther() {
+    throw new UnsupportedOperationException("kokok");
+  }
 
   @MongoEntity
   public static class EmbeddedA1 {

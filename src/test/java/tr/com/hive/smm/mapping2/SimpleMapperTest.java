@@ -9,6 +9,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
+import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,30 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimpleMapperTest {
+
+//  @Test
+//  void testSimpleMapper2() {
+//    withMongoClient(mongoClient -> {
+//      SimpleMapper simpleMapper = SimpleMapper.builder()
+//                                              .forPackage("tr.com.hive.smm.model")
+//                                              .forClass(ClassA1.class)
+//                                              .forClass(EmbeddedA1.class)
+//                                              .forClass(ClassB.class)
+//                                              .build();
+//
+//      CodecRegistry codecRegistry = simpleMapper.getCodecRegistry();
+//
+//      MongoDatabase database = mongoClient.getDatabase("sample")
+//                                          .withCodecRegistry(codecRegistry);
+//
+//      MongoCollection<ClassA1> collection = database.getCollection(ClassA1.class.getSimpleName(), ClassA1.class);
+//
+//      ClassA1 document = new ClassA1();
+//      document.varField = new MyInterfaceImpl("zxc");
+//
+//      collection.insertOne(document);
+//    });
+//  }
 
   @Test
   void testSimpleMapper() {
