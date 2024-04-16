@@ -45,7 +45,7 @@ public abstract class AbstractCodecsTests {
         }
     }
 
-    protected static <T> void encode(BsonOutput output, Codec<T> codec, T value) {
+    private static <T> void encode(BsonOutput output, Codec<T> codec, T value) {
         try (BsonBinaryWriter writer = new BsonBinaryWriter(output)) {
 
             writer.writeStartDocument();
@@ -57,7 +57,7 @@ public abstract class AbstractCodecsTests {
         }
     }
 
-    protected static <T> T decode(ByteBuffer byteBuffer, Codec<T> codec) {
+    private static <T> T decode(ByteBuffer byteBuffer, Codec<T> codec) {
         try (BsonBinaryReader reader = new BsonBinaryReader(byteBuffer)) {
 
             reader.readStartDocument();
