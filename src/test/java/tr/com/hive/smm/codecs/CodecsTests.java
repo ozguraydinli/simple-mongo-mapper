@@ -16,26 +16,19 @@
 
 package tr.com.hive.smm.codecs;
 
-import org.bson.BsonBinaryWriter;
 import org.bson.Document;
-import org.bson.codecs.EncoderContext;
-import org.bson.io.BasicOutputBuffer;
 import org.bson.types.Decimal128;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 
 import static java.lang.Long.MAX_VALUE;
-import static java.nio.ByteBuffer.wrap;
 import static java.time.Duration.ZERO;
 import static java.time.Duration.ofHours;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static tr.com.hive.smm.codecs.CodecsUtil.readDocument;
 
-@SuppressWarnings("JUnitTestMethodWithNoAssertions")
 final class CodecsTests extends AbstractCodecsTests {
 
     private CodecsTests() {}
@@ -63,5 +56,6 @@ final class CodecsTests extends AbstractCodecsTests {
         assertEquals(doc2.getLong("seconds"), 100L);
         assertEquals(doc2.getInteger("nanos"), 99);
         assertEquals(doc2.get("secondsnanos", Decimal128.class), Decimal128.parse("100.000000099"));
+
     }
 }
