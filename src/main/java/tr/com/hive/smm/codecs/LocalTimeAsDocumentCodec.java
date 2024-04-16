@@ -55,7 +55,7 @@ import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
  * <p>
  * This type is <b>immutable</b>.
  */
-public final class LocalTimeAsDocumentCodec implements Codec<LocalTime> {
+public final class LocalTimeAsDocumentCodec implements SMMCodec<LocalTime> {
 
     private static final Map<String, Decoder<?>> FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
                                                                               .put("hour", (r, dc) -> r.readInt32())
@@ -113,4 +113,10 @@ public final class LocalTimeAsDocumentCodec implements Codec<LocalTime> {
           value.getNano()
         ));
     }
+
+    @Override
+    public Map<String, Decoder<?>> getFieldDecoders() {
+        return FIELD_DECODERS;
+    }
+
 }

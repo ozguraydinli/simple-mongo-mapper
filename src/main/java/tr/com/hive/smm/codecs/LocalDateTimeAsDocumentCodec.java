@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
-import org.bson.codecs.Codec;
 import org.bson.codecs.Decoder;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
@@ -28,13 +27,12 @@ import static tr.com.hive.smm.codecs.CodecsUtil.getFieldValue;
 import static tr.com.hive.smm.codecs.CodecsUtil.readDocument;
 import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
 
-public final class LocalDateTimeAsDocumentCodec
-  implements Codec<LocalDateTime> {
+public final class LocalDateTimeAsDocumentCodec implements SMMCodec<LocalDateTime> {
 
   private final LocalDateAsDocumentCodec localDateCodec;
   private final LocalTimeAsDocumentCodec localTimeCodec;
 
-  private final Map<String, Decoder<?>> fieldDecoders;
+  private final Map<String, Decoder<?>> FIELD_DECODERS;
 
   /**
    * Creates a {@code LocalDateTimeAsDocumentCodec} using:
@@ -68,11 +66,11 @@ public final class LocalDateTimeAsDocumentCodec
       localTimeCodec, "localTimeCodec is null"
     );
 
-    fieldDecoders = ImmutableMap.<String, Decoder<?>>builder()
-                                .put("date", localDateCodec)
-                                .put("time", localTimeCodec)
-                                .put("datetime", (r, dc) -> r.readDecimal128())
-                                .build();
+    FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
+                                 .put("date", localDateCodec)
+                                 .put("time", localTimeCodec)
+                                 .put("datetime", (r, dc) -> r.readDecimal128())
+                                 .build();
   }
 
   @Override
@@ -109,7 +107,7 @@ public final class LocalDateTimeAsDocumentCodec
 
     requireNonNull(reader, "reader is null");
     return translateDecodeExceptions(
-      () -> readDocument(reader, decoderContext, fieldDecoders),
+      () -> readDocument(reader, decoderContext, FIELD_DECODERS),
       val -> of(
         getFieldValue(val, "date", LocalDate.class),
         getFieldValue(val, "time", LocalTime.class)
@@ -135,14 +133,14 @@ public final class LocalDateTimeAsDocumentCodec
 
     return localDateCodec.equals(rhs.localDateCodec) &&
            localTimeCodec.equals(rhs.localTimeCodec) &&
-           fieldDecoders.equals(rhs.fieldDecoders);
+           FIELD_DECODERS.equals(rhs.FIELD_DECODERS);
   }
 
   @Override
   public int hashCode() {
     int result = localDateCodec.hashCode();
     result = 31 * result + localTimeCodec.hashCode();
-    result = 31 * result + fieldDecoders.hashCode();
+    result = 31 * result + FIELD_DECODERS.hashCode();
     return result;
   }
 
@@ -151,8 +149,13 @@ public final class LocalDateTimeAsDocumentCodec
     return "LocalDateTimeAsDocumentCodec[" +
            "localDateCodec=" + localDateCodec +
            ",localTimeCodec=" + localTimeCodec +
-           ",fieldDecoders=" + fieldDecoders +
+           ",fieldDecoders=" + FIELD_DECODERS +
            ']';
+  }
+
+  @Override
+  public Map<String, Decoder<?>> getFieldDecoders() {
+    return FIELD_DECODERS;
   }
 
 }

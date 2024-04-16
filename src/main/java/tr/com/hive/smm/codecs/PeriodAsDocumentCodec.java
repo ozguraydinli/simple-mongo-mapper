@@ -27,7 +27,7 @@ import static tr.com.hive.smm.codecs.CodecsUtil.getFieldValue;
 import static tr.com.hive.smm.codecs.CodecsUtil.readDocument;
 import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
 
-public final class PeriodAsDocumentCodec implements Codec<Period> {
+public final class PeriodAsDocumentCodec implements SMMCodec<Period> {
 
   private static final Map<String, Decoder<?>> FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
                                                                             .put("years", (r, dc) -> r.readInt32())
@@ -78,6 +78,11 @@ public final class PeriodAsDocumentCodec implements Codec<Period> {
   @Override
   public Class<Period> getEncoderClass() {
     return Period.class;
+  }
+
+  @Override
+  public Map<String, Decoder<?>> getFieldDecoders() {
+    return FIELD_DECODERS;
   }
 
 }

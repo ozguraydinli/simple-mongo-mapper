@@ -59,14 +59,13 @@ import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
  * <p>
  * This type is <b>immutable</b>.
  */
-public final class ZonedDateTimeAsDocumentCodec
-  implements Codec<ZonedDateTime> {
+public final class ZonedDateTimeAsDocumentCodec implements SMMCodec<ZonedDateTime> {
 
   private final Codec<LocalDateTime> localDateTimeCodec;
   private final Codec<ZoneOffset> zoneOffsetCodec;
   private final Codec<ZoneId> zoneIdCodec;
 
-  private final Map<String, Decoder<?>> fieldDecoders;
+  private final Map<String, Decoder<?>> FIELD_DECODERS;
 
   /**
    * Creates a {@code ZonedDateTimeAsDocumentCodec} using:
@@ -107,11 +106,11 @@ public final class ZonedDateTimeAsDocumentCodec
       zoneIdCodec, "zoneIdCodec is null"
     );
 
-    fieldDecoders = ImmutableMap.<String, Decoder<?>>builder()
-                                .put("dateTime", localDateTimeCodec)
-                                .put("offset", zoneOffsetCodec)
-                                .put("zone", zoneIdCodec)
-                                .build();
+    FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
+                                 .put("dateTime", localDateTimeCodec)
+                                 .put("offset", zoneOffsetCodec)
+                                 .put("zone", zoneIdCodec)
+                                 .build();
   }
 
   @Override
@@ -146,7 +145,7 @@ public final class ZonedDateTimeAsDocumentCodec
 
     requireNonNull(reader, "reader is null");
     return translateDecodeExceptions(
-      () -> readDocument(reader, decoderContext, fieldDecoders),
+      () -> readDocument(reader, decoderContext, FIELD_DECODERS),
       val -> ofStrict(
         getFieldValue(val, "dateTime", LocalDateTime.class),
         getFieldValue(val, "offset", ZoneOffset.class),
@@ -174,7 +173,7 @@ public final class ZonedDateTimeAsDocumentCodec
     return localDateTimeCodec.equals(rhs.localDateTimeCodec) &&
            zoneOffsetCodec.equals(rhs.zoneOffsetCodec) &&
            zoneIdCodec.equals(rhs.zoneIdCodec) &&
-           fieldDecoders.equals(rhs.fieldDecoders);
+           FIELD_DECODERS.equals(rhs.FIELD_DECODERS);
   }
 
   @Override
@@ -182,7 +181,7 @@ public final class ZonedDateTimeAsDocumentCodec
     int result = localDateTimeCodec.hashCode();
     result = 31 * result + zoneOffsetCodec.hashCode();
     result = 31 * result + zoneIdCodec.hashCode();
-    result = 31 * result + fieldDecoders.hashCode();
+    result = 31 * result + FIELD_DECODERS.hashCode();
     return result;
   }
 
@@ -192,8 +191,13 @@ public final class ZonedDateTimeAsDocumentCodec
            "localDateTimeCodec=" + localDateTimeCodec +
            ",zoneOffsetCodec=" + zoneOffsetCodec +
            ",zoneIdCodec=" + zoneIdCodec +
-           ",fieldDecoders=" + fieldDecoders +
+           ",fieldDecoders=" + FIELD_DECODERS +
            ']';
+  }
+
+  @Override
+  public Map<String, Decoder<?>> getFieldDecoders() {
+    return FIELD_DECODERS;
   }
 
 }

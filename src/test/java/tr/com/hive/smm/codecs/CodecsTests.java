@@ -16,9 +16,14 @@
 
 package tr.com.hive.smm.codecs;
 
+import org.bson.BsonBinaryWriter;
+import org.bson.Document;
+import org.bson.codecs.EncoderContext;
 import org.bson.io.BasicOutputBuffer;
+import org.bson.types.Decimal128;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 
 import static java.lang.Long.MAX_VALUE;
@@ -28,11 +33,12 @@ import static java.time.Duration.ofHours;
 import static java.time.Duration.ofSeconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static tr.com.hive.smm.codecs.CodecsUtil.readDocument;
 
 @SuppressWarnings("JUnitTestMethodWithNoAssertions")
-final class DurationCodecsTests extends AbstractCodecsTests {
+final class CodecsTests extends AbstractCodecsTests {
 
-    private DurationCodecsTests() {}
+    private CodecsTests() {}
 
     @Test
     void testDurationAsDocumentCodec() {
@@ -45,15 +51,17 @@ final class DurationCodecsTests extends AbstractCodecsTests {
         testCodec(codec, ofSeconds(MAX_VALUE, 999_999_999L));
         testCodec(codec, ofHours(12));
 
-        try (BasicOutputBuffer output = new BasicOutputBuffer()) {
-            Duration duration = Duration.ofDays(455);
-            encode(output, codec, duration);
+        Duration dur1 = Duration.ofDays(455);
+        Document doc1 = encodeDecodeAndGetDocument(dur1, codec);
 
-            Duration decoded = decode(wrap(output.toByteArray()), codec);
+        assertEquals(doc1.getLong("seconds"), 39312000L);
+        assertEquals(doc1.getInteger("nanos"), 0);
+        assertEquals(doc1.get("secondsnanos", Decimal128.class), Decimal128.parse("39312000.000000000"));
 
-//            assertEquals(value, decoded);
-        }
-
-
+        Duration dur2 = Duration.ofSeconds(100, 99L);
+        Document doc2 = encodeDecodeAndGetDocument(dur2, codec);
+        assertEquals(doc2.getLong("seconds"), 100L);
+        assertEquals(doc2.getInteger("nanos"), 99);
+        assertEquals(doc2.get("secondsnanos", Decimal128.class), Decimal128.parse("100.000000099"));
     }
 }

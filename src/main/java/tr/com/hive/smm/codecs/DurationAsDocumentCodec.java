@@ -27,7 +27,7 @@ import static tr.com.hive.smm.codecs.CodecsUtil.getFieldValue;
 import static tr.com.hive.smm.codecs.CodecsUtil.readDocument;
 import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
 
-public class DurationAsDocumentCodec implements Codec<Duration> {
+public class DurationAsDocumentCodec implements SMMCodec<Duration> {
 
   private static final Map<String, Decoder<?>> FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
                                                                             .put("seconds", (r, dc) -> r.readInt64())
@@ -47,7 +47,7 @@ public class DurationAsDocumentCodec implements Codec<Duration> {
     writer.writeInt64("seconds", value.getSeconds());
     writer.writeInt32("nanos", value.getNano());
     writer.writeDecimal128("secondsnanos", parse(format(
-      "%d%010d",
+      "%d.%09d",
       value.getSeconds(),
       value.getNano()
     )));
@@ -72,6 +72,11 @@ public class DurationAsDocumentCodec implements Codec<Duration> {
   @Override
   public Class<Duration> getEncoderClass() {
     return Duration.class;
+  }
+
+  @Override
+  public Map<String, Decoder<?>> getFieldDecoders() {
+    return FIELD_DECODERS;
   }
 
 }

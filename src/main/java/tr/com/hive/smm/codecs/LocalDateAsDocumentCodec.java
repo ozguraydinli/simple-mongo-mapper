@@ -35,7 +35,7 @@ import static tr.com.hive.smm.codecs.CodecsUtil.getFieldValue;
 import static tr.com.hive.smm.codecs.CodecsUtil.readDocument;
 import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
 
-public final class LocalDateAsDocumentCodec implements Codec<LocalDate> {
+public final class LocalDateAsDocumentCodec implements SMMCodec<LocalDate> {
 
   private static final Map<String, Decoder<?>> FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
                                                                             .put("year", (r, dc) -> r.readInt32())
@@ -88,6 +88,11 @@ public final class LocalDateAsDocumentCodec implements Codec<LocalDate> {
       value.getMonthValue(),
       value.getDayOfMonth()
     ));
+  }
+
+  @Override
+  public Map<String, Decoder<?>> getFieldDecoders() {
+    return FIELD_DECODERS;
   }
 
 }

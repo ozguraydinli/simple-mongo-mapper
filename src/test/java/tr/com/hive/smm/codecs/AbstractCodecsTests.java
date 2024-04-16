@@ -18,6 +18,7 @@ package tr.com.hive.smm.codecs;
 
 import org.bson.BsonBinaryReader;
 import org.bson.BsonBinaryWriter;
+import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
@@ -64,6 +65,25 @@ public abstract class AbstractCodecsTests {
             assertEquals("value", reader.readName());
 
             return codec.decode(reader, DecoderContext.builder().build());
+        }
+    }
+
+    protected static Document decodeToDocument(ByteBuffer byteBuffer, SMMCodec<?> codec) {
+        try (BsonBinaryReader reader = new BsonBinaryReader(byteBuffer)) {
+            return CodecsUtil.readDocument(reader, DecoderContext.builder().build(), codec.getFieldDecoders());
+        }
+    }
+
+    protected static <T> void codecEncode(SMMCodec<T> codec, T t, BasicOutputBuffer output){
+        try (BsonBinaryWriter writer = new BsonBinaryWriter(output)) {
+            codec.encode(writer, t, EncoderContext.builder().build());
+        }
+    }
+
+    protected static <T> Document encodeDecodeAndGetDocument(T t, SMMCodec<T> codec){
+        try (BasicOutputBuffer output = new BasicOutputBuffer()) {
+            codecEncode(codec, t, output);
+            return decodeToDocument(wrap(output.toByteArray()), codec);
         }
     }
 }

@@ -56,13 +56,12 @@ import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
  * <p>
  * This type is <b>immutable</b>.
  */
-public final class OffsetDateTimeAsDocumentCodec
-  implements Codec<OffsetDateTime> {
+public final class OffsetDateTimeAsDocumentCodec implements SMMCodec<OffsetDateTime> {
 
   private final Codec<LocalDateTime> localDateTimeCodec;
   private final Codec<ZoneOffset> zoneOffsetCodec;
 
-  private final Map<String, Decoder<?>> fieldDecoders;
+  private final Map<String, Decoder<?>> FIELD_DECODERS;
 
   /**
    * Creates an {@code OffsetDateTimeAsDocumentCodec} using:
@@ -96,10 +95,10 @@ public final class OffsetDateTimeAsDocumentCodec
       zoneOffsetCodec, "zoneOffsetCodec is null"
     );
 
-    fieldDecoders = ImmutableMap.<String, Decoder<?>>builder()
-                                .put("dateTime", localDateTimeCodec)
-                                .put("offset", zoneOffsetCodec)
-                                .build();
+    FIELD_DECODERS = ImmutableMap.<String, Decoder<?>>builder()
+                                 .put("dateTime", localDateTimeCodec)
+                                 .put("offset", zoneOffsetCodec)
+                                 .build();
   }
 
   @Override
@@ -131,7 +130,7 @@ public final class OffsetDateTimeAsDocumentCodec
 
     requireNonNull(reader, "reader is null");
     return translateDecodeExceptions(
-      () -> readDocument(reader, decoderContext, fieldDecoders),
+      () -> readDocument(reader, decoderContext, FIELD_DECODERS),
       val -> of(
         getFieldValue(val, "dateTime", LocalDateTime.class),
         getFieldValue(val, "offset", ZoneOffset.class)
@@ -157,14 +156,14 @@ public final class OffsetDateTimeAsDocumentCodec
 
     return localDateTimeCodec.equals(rhs.localDateTimeCodec) &&
            zoneOffsetCodec.equals(rhs.zoneOffsetCodec) &&
-           fieldDecoders.equals(rhs.fieldDecoders);
+           FIELD_DECODERS.equals(rhs.FIELD_DECODERS);
   }
 
   @Override
   public int hashCode() {
     int result = localDateTimeCodec.hashCode();
     result = 31 * result + zoneOffsetCodec.hashCode();
-    result = 31 * result + fieldDecoders.hashCode();
+    result = 31 * result + FIELD_DECODERS.hashCode();
     return result;
   }
 
@@ -173,8 +172,13 @@ public final class OffsetDateTimeAsDocumentCodec
     return "OffsetDateTimeAsDocumentCodec[" +
            "localDateTimeCodec=" + localDateTimeCodec +
            ",zoneOffsetCodec=" + zoneOffsetCodec +
-           ",fieldDecoders=" + fieldDecoders +
+           ",fieldDecoders=" + FIELD_DECODERS +
            ']';
+  }
+
+  @Override
+  public Map<String, Decoder<?>> getFieldDecoders() {
+    return FIELD_DECODERS;
   }
 
 }
