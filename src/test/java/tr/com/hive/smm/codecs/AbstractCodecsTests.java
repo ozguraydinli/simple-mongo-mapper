@@ -68,13 +68,13 @@ public abstract class AbstractCodecsTests {
         }
     }
 
-    protected static Document decodeToDocument(ByteBuffer byteBuffer, SMMCodec<?> codec) {
+    private static Document decodeToDocument(ByteBuffer byteBuffer, SMMCodec<?> codec) {
         try (BsonBinaryReader reader = new BsonBinaryReader(byteBuffer)) {
             return CodecsUtil.readDocument(reader, DecoderContext.builder().build(), codec.getFieldDecoders());
         }
     }
 
-    protected static <T> void codecEncode(SMMCodec<T> codec, T t, BasicOutputBuffer output){
+    private static <T> void codecEncode(SMMCodec<T> codec, T t, BasicOutputBuffer output){
         try (BsonBinaryWriter writer = new BsonBinaryWriter(output)) {
             codec.encode(writer, t, EncoderContext.builder().build());
         }
