@@ -24,7 +24,7 @@ public class ClassA extends ClassASuper {
   public ClassC varClassC;
 
   @MongoRef
-  public ClassB refClassB;
+  public ClassBRef refClassB;
 
   public ClassB varClassB;
 
@@ -108,13 +108,13 @@ public class ClassA extends ClassASuper {
   public List<ClassA> refListOfClassA;
 
   @MongoRef
-  public List<ClassB> refListOfClassB;
+  public List<ClassBRef> refListOfClassB;
 
   @MongoRef
-  public List<ClassB> refListOfClassBEmpty;
+  public List<ClassBRef> refListOfClassBEmpty;
 
   @MongoRef
-  public List<ClassB> refListOfClassBEmptyWithInit = Lists.newArrayList();
+  public List<ClassBRef> refListOfClassBEmptyWithInit = Lists.newArrayList();
 
   // nested collections
   public List<List<String>> varListOfListOfString;

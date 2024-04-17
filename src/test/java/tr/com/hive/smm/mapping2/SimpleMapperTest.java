@@ -11,56 +11,69 @@ import com.mongodb.client.model.Filters;
 
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import tr.com.hive.smm.model.ClassA1;
-import tr.com.hive.smm.model.ClassA1.EmbeddedA1;
 import tr.com.hive.smm.model.ClassB;
+import tr.com.hive.smm.model.ClassB2;
+import tr.com.hive.smm.model.ClassBRef;
 import tr.com.hive.smm.model.MyComplexEnum;
 import tr.com.hive.smm.model.MyEnum;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimpleMapperTest {
 
-//  @Test
-//  void testSimpleMapper2() {
-//    withMongoClient(mongoClient -> {
-//      SimpleMapper simpleMapper = SimpleMapper.builder()
-//                                              .forPackage("tr.com.hive.smm.model")
-//                                              .forClass(ClassA1.class)
-//                                              .forClass(EmbeddedA1.class)
-//                                              .forClass(ClassB.class)
-//                                              .build();
+  @Test
+  void testSimpleMapper2() {
+    Clock clock = Clock.fixed(Instant.now(), ZoneId.of(ZoneOffset.UTC.getId()));
+    System.out.println(ZonedDateTime.now(clock));
+//    System.out.println(ZonedDateTime.now(clock).toInstant().toEpochMilli());
+    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()));
+    System.out.println(TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
+    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()) + TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
+
+//    int nano = ZonedDateTime.now(clock).toInstant().getNano();
+//    System.out.println(nano);
+//    System.out.println((nano / 1_000_000) * 1_000_000);
+//    System.out.println((nano - (nano / 1_000_000) * 1_000_000) * 1_000);
 //
-//      CodecRegistry codecRegistry = simpleMapper.getCodecRegistry();
+//    long result = TimeUnit.MILLISECONDS.toNanos(ZonedDateTime.now(clock).toInstant().toEpochMilli()) + (nano - (nano / 1_000_000) * 1_000_000);
 //
-//      MongoDatabase database = mongoClient.getDatabase("sample")
-//                                          .withCodecRegistry(codecRegistry);
-//
-//      MongoCollection<ClassA1> collection = database.getCollection(ClassA1.class.getSimpleName(), ClassA1.class);
-//
-//      ClassA1 document = new ClassA1();
-//      document.varField = new MyInterfaceImpl("zxc");
-//
-//      collection.insertOne(document);
-//    });
-//  }
+//    System.out.println(result);
+
+//    Instant.ofEpochSecond(
+//      TimeUnit.MICROSECONDS.toSeconds(microsSinceEpoch),
+//      TimeUnit.MICROSECONDS.toNanos(
+//        Math.floorMod(microsSinceEpoch, TimeUnit.SECONDS.toMicros(1))
+//      )
+//    );
+  }
 
   @Test
   void testSimpleMapper() {
@@ -68,9 +81,8 @@ class SimpleMapperTest {
 
       SimpleMapper simpleMapper = SimpleMapper.builder()
                                               .forPackage("tr.com.hive.smm.model")
-                                              .forClass(ClassA1.class)
-                                              .forClass(EmbeddedA1.class)
-                                              .forClass(ClassB.class)
+//                                              .forClass(EmbeddedA1.class)
+//                                              .forClass(ClassB2.class)
                                               .build();
 
       CodecRegistry codecRegistry = simpleMapper.getCodecRegistry();
@@ -80,11 +92,14 @@ class SimpleMapperTest {
 
       MongoCollection<ClassA1> collection = database.getCollection(ClassA1.class.getSimpleName(), ClassA1.class);
 
+      Clock clock = Clock.fixed(Instant.parse("2024-04-17T07:24:46.878915Z"), ZoneId.of(ZoneOffset.UTC.getId()));
+
       ClassA1 classA1 = new ClassA1();
 
       ObjectId id = new ObjectId();
       classA1.id = id;
       classA1.varString = "myVal";
+      classA1.varString2 = "myVal2";
       classA1.varNullString = null;
       classA1.varEnum = MyEnum.En1;
       classA1.varInt = 1;
@@ -106,14 +121,20 @@ class SimpleMapperTest {
       Date now2 = new Date();
       classB2.varDate = now2;
       classB2.varEnum = MyEnum.En2;
-
+//
       classA1.varClassB = classB2;
+
+      ObjectId idEmbeddedRecord = new ObjectId();
+
+      classA1.varClassB2 = ClassB2.create(id);
 
       classA1.varStringSuper = "myVal";
       classA1.setVarIntSuper(1);
 
       BigDecimal varBigDecimal = new BigDecimal(13);
       classA1.varBigDecimal = varBigDecimal;
+      BigInteger varBigInteger = BigInteger.valueOf(1);
+      classA1.varBigInteger = varBigInteger;
 
       // collections
 
@@ -129,7 +150,7 @@ class SimpleMapperTest {
       ObjectId id1 = new ObjectId();
       ObjectId id2 = new ObjectId();
       classA1.varListOfObjectId = List.of(id1, id2);
-      classA1.varListOfClassB = List.of(ClassB.create(1), ClassB.create(2));
+      classA1.varListOfClassB = List.of(ClassB.create(id1, 1), ClassB.create(id2, 2));
       classA1.varListOfListOfString = List.of(
         List.of("s1", "s2"),
         List.of("s3")
@@ -165,11 +186,21 @@ class SimpleMapperTest {
         )
       );
 
+      // java.time
+      classA1.varZonedDateTime = ZonedDateTime.now(clock);
+      classA1.varYearMonth = YearMonth.now(clock);
+      classA1.varYear = Year.now(clock);
+      Duration dur1 = Duration.ofDays(455);
+      classA1.varDuration = dur1;
+      Duration dur2 = Duration.ofSeconds(100, 99L);
+      classA1.varDuration2 = dur2;
+
       // mongorefs
       ObjectId classBId = new ObjectId();
-      ClassB classB = new ClassB(classBId);
+      ClassBRef classB = new ClassBRef(classBId);
       classB.varString = "str";
       classA1.refClassB = classB;
+      classA1.setRefClassBPrivate(classB);
 
       ObjectId id5 = new ObjectId();
       ObjectId id6 = new ObjectId();
@@ -180,12 +211,35 @@ class SimpleMapperTest {
 
       collection.insertOne(classA1);
 
+      Document document = database.getCollection(ClassA1.class.getSimpleName())
+                                  .find().first();
+
+      Objects.requireNonNull(document);
+      assertNotNull(document.getObjectId("_id"));
+      assertNotNull(document.get("varClassB", Document.class).get("id"));
+      assertNull(document.getString("varString2"));
+      assertNotNull(document.getString("varStr"));
+
+      // java.time
+      assertNotNull(document.get("varDuration", Document.class));
+      assertNotNull(document.get("varDuration", Document.class).get("seconds"));
+      assertEquals(39312000L, document.get("varDuration", Document.class).get("seconds"));
+      assertEquals(0, document.get("varDuration", Document.class).get("nanos"));
+      assertEquals(Decimal128.parse("39312000.000000000"), document.get("varDuration", Document.class).get("value"));
+
+      assertNotNull(document.get("varDuration2", Document.class));
+      assertNotNull(document.get("varDuration2", Document.class).get("seconds"));
+      assertEquals(100L, document.get("varDuration2", Document.class).get("seconds"));
+      assertEquals(99, document.get("varDuration2", Document.class).get("nanos"));
+      assertEquals(Decimal128.parse("100.000000099"), document.get("varDuration2", Document.class).get("value"));
+
       ClassA1 fromDb = collection.find(Filters.eq("_id", classA1.id)).first();
 
       Objects.requireNonNull(fromDb);
 
       assertEquals(new ObjectId(id.toString()), fromDb.id);
       assertEquals("myVal", fromDb.varString);
+      assertEquals("myVal2", fromDb.varString2);
       assertNull(fromDb.varNullString);
       assertEquals(MyEnum.En1, fromDb.varEnum);
       assertEquals(1, fromDb.varInt);
@@ -202,11 +256,13 @@ class SimpleMapperTest {
       assertEquals("str", fromDb.varClassB.varString);
       assertEquals(new Date(now2.getTime()), fromDb.varClassB.varDate);
       assertEquals(MyEnum.En2, fromDb.varClassB.varEnum);
+      assertEquals(id, fromDb.varClassB2._id);
 
       assertEquals("myVal", fromDb.varStringSuper);
       assertEquals(1, fromDb.getVarIntSuper());
 
       assertEquals(new BigDecimal(varBigDecimal.toBigInteger()), fromDb.varBigDecimal);
+      assertEquals(varBigInteger, fromDb.varBigInteger);
 
       assertEquals(3, fromDb.varListOfString.size());
       assertEquals(List.of("a1", "a2", "a3"), fromDb.varListOfString);
@@ -226,6 +282,10 @@ class SimpleMapperTest {
       assertEquals(List.of(id1, id2), fromDb.varListOfObjectId);
       assertEquals(2, fromDb.varListOfClassB.size());
       assertEquals(1, fromDb.varListOfClassB.getFirst().varInt);
+      assertEquals(id1, fromDb.varListOfClassB.getFirst().id);
+      assertNotEquals(id1, fromDb.varListOfClassB.get(1).id);
+      assertEquals(id2, fromDb.varListOfClassB.get(1).id);
+      assertNull(fromDb.varListOfClassB.get(1).varTransientList);
       assertEquals(2, fromDb.varListOfListOfString.size());
       assertEquals(2, fromDb.varListOfListOfString.getFirst().size());
       assertEquals("s1", fromDb.varListOfListOfString.getFirst().getFirst());
@@ -265,12 +325,24 @@ class SimpleMapperTest {
       assertNotNull(fromDb.refClassB.id);
       assertNull(fromDb.refClassB.varString);
       assertEquals(new ObjectId(classBId.toString()), fromDb.refClassB.id);
+      assertNotNull(fromDb.getRefClassBPrivate());
+      assertNotNull(fromDb.getRefClassBPrivate().id);
+      assertNull(fromDb.getRefClassBPrivate().varString);
+      assertEquals(new ObjectId(classBId.toString()), fromDb.getRefClassBPrivate().id);
 
       assertEquals(2, fromDb.refListOfClassA.size());
       assertEquals(id5, fromDb.refListOfClassA.getFirst().id);
       assertNull(fromDb.refListOfClassA.getFirst().varString);
 
       assertNotNull(fromDb.refListOfClassBEmptyWithInit);
+
+      // java.time
+      assertNotNull(fromDb.varZonedDateTime);
+      assertEquals(ZonedDateTime.now(clock), fromDb.varZonedDateTime);
+      assertNotNull(fromDb.varYearMonth);
+      assertEquals(YearMonth.now(clock), fromDb.varYearMonth);
+      assertNotNull(fromDb.varYear);
+      assertEquals(Year.now(clock), fromDb.varYear);
 
       // custom converter
       assertEquals(2, fromDb.varNestedMapWithCustomCodec.size());

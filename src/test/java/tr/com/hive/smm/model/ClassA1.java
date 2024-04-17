@@ -7,7 +7,12 @@ import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -55,10 +60,17 @@ public class ClassA1 extends ClassA1Super {
 
   public BigDecimal varBigDecimal;
 
+  public BigInteger varBigInteger;
+
   @MongoRef
-  public ClassB refClassB;
+  public ClassBRef refClassB;
+
+  @MongoRef
+  private ClassBRef refClassBPrivate;
 
   public ClassB varClassB;
+
+  public ClassB2 varClassB2;
 
   // collections
   public List<String> varListOfString;
@@ -73,7 +85,7 @@ public class ClassA1 extends ClassA1Super {
 
   public List<ObjectId> varListOfObjectId;
 
-  public List<ClassB> varListOfClassB;
+  public List<ClassB> varListOfClassB = Lists.newArrayList();
 
   public List<ClassB> varListOfClassB_Null;
   public List<ClassB> varListOfClassB_Empty = Lists.newArrayList();
@@ -110,13 +122,13 @@ public class ClassA1 extends ClassA1Super {
   public List<ClassA1> refListOfClassA;
 
   @MongoRef
-  public List<ClassB> refListOfClassB;
+  public List<ClassBRef> refListOfClassB;
 
   @MongoRef
-  public List<ClassB> refListOfClassBEmpty;
+  public List<ClassBRef> refListOfClassBEmpty;
 
   @MongoRef
-  public List<ClassB> refListOfClassBEmptyWithInit = Lists.newArrayList();
+  public List<ClassBRef> refListOfClassBEmptyWithInit = Lists.newArrayList();
 
   // nested collections
   public List<List<String>> varListOfListOfString;
@@ -134,9 +146,23 @@ public class ClassA1 extends ClassA1Super {
   @MongoTransient
   public EmbeddedA1WithoutAnnotation varEmbeddedA1WithoutAnnotation;
 
+  public ZonedDateTime varZonedDateTime;
+  public YearMonth varYearMonth;
+  public Year varYear;
+  public Duration varDuration;
+  public Duration varDuration2;
+
   @BsonIgnore
   public String getOther() {
     throw new UnsupportedOperationException("kokok");
+  }
+
+  public void setRefClassBPrivate(ClassBRef refClassBPrivate) {
+    this.refClassBPrivate = refClassBPrivate;
+  }
+
+  public ClassBRef getRefClassBPrivate() {
+    return refClassBPrivate;
   }
 
   @MongoEntity
@@ -165,7 +191,7 @@ public class ClassA1 extends ClassA1Super {
     public String vartString;
 
     @MongoRef
-    public ClassB refClassB;
+    public ClassBRef refClassB;
 
   }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tr.com.hive.smm.codecs;
+package tr.com.hive.smm.codecs.time;
 
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
@@ -25,35 +25,29 @@ import org.bson.codecs.EncoderContext;
 import java.time.ZoneOffset;
 
 import static java.util.Objects.requireNonNull;
-import static tr.com.hive.smm.codecs.CodecsUtil.translateDecodeExceptions;
 
 public final class ZoneOffsetAsInt32Codec implements Codec<ZoneOffset> {
 
-    @Override
-    public void encode(
-            BsonWriter writer,
-            ZoneOffset value,
-            EncoderContext encoderContext) {
+  @Override
+  public void encode(BsonWriter writer, ZoneOffset value, EncoderContext encoderContext) {
+    requireNonNull(writer, "writer is null");
+    requireNonNull(value, "value is null");
 
-        requireNonNull(writer, "writer is null");
-        requireNonNull(value, "value is null");
-        writer.writeInt32(value.getTotalSeconds());
-    }
+    writer.writeInt32(value.getTotalSeconds());
+  }
 
-    @Override
-    public ZoneOffset decode(
-            BsonReader reader,
-            DecoderContext decoderContext) {
+  @Override
+  public ZoneOffset decode(BsonReader reader, DecoderContext decoderContext) {
+    requireNonNull(reader, "reader is null");
 
-        requireNonNull(reader, "reader is null");
-        return translateDecodeExceptions(
-                reader::readInt32,
-                ZoneOffset::ofTotalSeconds
-        );
-    }
+    int totalSeconds = reader.readInt32();
 
-    @Override
-    public Class<ZoneOffset> getEncoderClass() {
-        return ZoneOffset.class;
-    }
+    return ZoneOffset.ofTotalSeconds(totalSeconds);
+  }
+
+  @Override
+  public Class<ZoneOffset> getEncoderClass() {
+    return ZoneOffset.class;
+  }
+
 }

@@ -1,4 +1,4 @@
-package tr.com.hive.smm.mapping2;
+package tr.com.hive.smm.codecs.internal;
 
 import org.bson.codecs.Codec;
 import org.bson.codecs.pojo.PropertyCodecProvider;

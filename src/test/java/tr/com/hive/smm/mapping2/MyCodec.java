@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import tr.com.hive.smm.codecs.internal.DefaultCodec;
+
 public class MyCodec<T extends Map<String, List<Map<String, String>>>> extends DefaultCodec<T> implements Codec<T> {
 
   public MyCodec(Class<?> aClass) {

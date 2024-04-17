@@ -2,11 +2,9 @@ package tr.com.hive.smm.mapping2;
 
 import com.mongodb.MongoClientSettings;
 
-import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.ClassModel;
-import org.bson.codecs.pojo.ClassModelBuilder;
+import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 
 import java.lang.reflect.Field;
@@ -19,6 +17,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tr.com.hive.smm.codecs.BigIntegerCodecProvider;
+import tr.com.hive.smm.codecs.internal.MapCodecProvider;
+import tr.com.hive.smm.codecs.time.JavaTimeCodecProvider;
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoField;
 import tr.com.hive.smm.mapping.annotation.MongoId;
@@ -35,6 +36,8 @@ public class SimpleMapper {
 
   private CodecRegistry codecRegistry;
 
+  private Map<String, MappedClass> mappedClasses;
+
   private SimpleMapper() {
     this.classLoader = Thread.currentThread().getContextClassLoader();
   }
@@ -44,11 +47,13 @@ public class SimpleMapper {
   }
 
   @SuppressWarnings("unused")
-  public static CodecRegistry createRegistry(CodecRegistry codecRegistry, Class<?>... clazz) {
+  public CodecRegistry createRegistry(CodecRegistry codecRegistry, Class<?>... clazz) {
     return CodecRegistries.fromRegistries(
       codecRegistry,
       CodecRegistries.fromProviders(
         PojoCodecProvider.builder()
+                         .automatic(true)
+                         .conventions(List.of(new SimpleMapperDefaultConvention(mappedClasses), Conventions.ANNOTATION_CONVENTION, Conventions.OBJECT_ID_GENERATORS))
                          .register(clazz)
                          .build()
       )
@@ -71,94 +76,22 @@ public class SimpleMapper {
                                   .collect(Collectors.toUnmodifiableSet())
                                   .toArray(Class<?>[]::new);
 
-    Map<String, MappedClass> mappedClasses = getMappedClasses(allClasses);
-
-    ClassModel<?>[] list = getCustomizedFields(allClasses, mappedClasses);
+    mappedClasses = getMappedClasses(allClasses);
 
     codecRegistry = CodecRegistries.fromRegistries(
       MongoClientSettings.getDefaultCodecRegistry(),
+      CodecRegistries.fromProviders(List.of(new BigIntegerCodecProvider(), new JavaTimeCodecProvider())),
       CodecRegistries.fromProviders(
         PojoCodecProvider.builder()
+                         .automatic(true)
+                         .conventions(List.of(new SimpleMapperDefaultConvention(mappedClasses), Conventions.ANNOTATION_CONVENTION, Conventions.OBJECT_ID_GENERATORS))
                          .register(allClasses)
-                         .register(list)
                          .register(new MapCodecProvider())
                          .build()
       )
     );
 
     return this;
-  }
-
-  private ClassModel<?>[] getCustomizedFields(Class<?>[] array, Map<String, MappedClass> mappedClasses) {
-    List<ClassModel<?>> list = new ArrayList<>();
-
-    for (Class<?> aClass : array) {
-      try {
-        String name = aClass.getName();
-        if (!mappedClasses.containsKey(name)) {
-          throw new RuntimeException("Unkown class: " + aClass.getName());
-        }
-
-        MappedClass mappedClass = mappedClasses.get(name);
-
-        if (mappedClass.shouldBuildClassModel()) {
-          ClassModelBuilder<?> classModelBuilder = buildClassModelBuilder(mappedClasses, aClass, mappedClass);
-          list.add(classModelBuilder.build());
-        }
-
-      } catch (Exception ex) {
-        throw new RuntimeException("Cannot build class model for: " + aClass, ex);
-      }
-    }
-
-    return list.toArray(ClassModel<?>[]::new);
-  }
-
-  private static ClassModelBuilder<?> buildClassModelBuilder(Map<String, MappedClass> mappedClasses, Class<?> aClass, MappedClass mappedClass) {
-    ClassModelBuilder<?> classModelBuilder = ClassModel.builder(aClass);
-
-    mappedClass.getMongoRefFields().forEach(field -> {
-      try {
-        Object dummyInstance = SimpleMapperHelper.createDummyInstance(aClass);
-        classModelBuilder.getProperty(field.getName())
-                         .codec(new MongoRefCodec<>(mappedClasses, field, dummyInstance));
-      } catch (Exception ex) {
-        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName(), ex);
-      }
-    });
-
-    mappedClass.getMongoTransientFields().forEach(field -> {
-      try {
-        classModelBuilder.getProperty(field.getName())
-                         .readName(null)
-                         .writeName(null)
-                         .propertySerialization(p -> false);
-      } catch (Exception e) {
-        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName());
-      }
-    });
-
-    mappedClass.getFieldToMongoFieldMap().forEach((field, value) -> {
-      try {
-        classModelBuilder.getProperty(field.getName())
-                         .readName(value)
-                         .writeName(value);
-      } catch (Exception e) {
-        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName());
-      }
-    });
-
-    mappedClass.getFieldToCodecClassMap().forEach((field, clazz) -> {
-      try {
-        Codec<?> instance = ReflectionUtils.createInstance(clazz, aClass);
-        classModelBuilder.getProperty(field.getName())
-                         .codec(new CustomCodec<>(aClass, instance));
-      } catch (Exception e) {
-        throw new RuntimeException("Cannot build class model for: " + aClass + " field: " + field.getName());
-      }
-    });
-
-    return classModelBuilder;
   }
 
   private Map<String, MappedClass> getMappedClasses(Class<?>[] array) {

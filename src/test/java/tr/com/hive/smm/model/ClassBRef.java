@@ -3,7 +3,6 @@ package tr.com.hive.smm.model;
 import com.google.common.collect.Lists;
 
 import org.bson.Document;
-import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.types.ObjectId;
 
 import java.util.Date;
@@ -15,9 +14,9 @@ import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoTransient;
 
 @MongoEntity
-public class ClassB {
+public class ClassBRef {
 
-//  @MongoId
+  @MongoId
   public ObjectId id;
 
   public String varString;
@@ -54,8 +53,8 @@ public class ClassB {
     return document;
   }
 
-  public static ClassB create(int i) {
-    ClassB classB = new ClassB();
+  public static ClassBRef create(int i) {
+    ClassBRef classB = new ClassBRef();
     classB.varString = "s" + i;
     classB.varInt = i;
     classB.varDate = new Date();
@@ -65,8 +64,8 @@ public class ClassB {
     return classB;
   }
 
-  public static ClassB create(ObjectId id, int i) {
-    ClassB classB = new ClassB();
+  public static ClassBRef create(ObjectId id, int i) {
+    ClassBRef classB = new ClassBRef();
     classB.id = id;
     classB.varString = "s" + i;
     classB.varInt = i;
@@ -78,10 +77,10 @@ public class ClassB {
     return classB;
   }
 
-  public ClassB() {
+  public ClassBRef() {
   }
 
-  public ClassB(ObjectId id) {
+  public ClassBRef(ObjectId id) {
     this.id = id;
   }
 

@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 import tr.com.hive.smm.mapping.Converter;
 import tr.com.hive.smm.mapping.EmptyConverter;
-import tr.com.hive.smm.mapping2.DefaultCodec;
+import tr.com.hive.smm.codecs.internal.DefaultCodec;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})

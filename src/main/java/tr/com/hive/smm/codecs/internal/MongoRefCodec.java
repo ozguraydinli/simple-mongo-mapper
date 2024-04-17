@@ -1,4 +1,4 @@
-package tr.com.hive.smm.mapping2;
+package tr.com.hive.smm.codecs.internal;
 
 import org.bson.BsonReader;
 import org.bson.BsonType;
@@ -11,9 +11,7 @@ import org.bson.types.ObjectId;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import tr.com.hive.smm.mapping2.MappedClass;
 import tr.com.hive.smm.util.ReflectionUtils;
 
 @SuppressWarnings("unchecked")
@@ -101,7 +100,17 @@ public class MongoRefCodec<T> implements Codec<T> {
 
     MappedClass mappedClass = classMap.get(clazzName);
 
-    String simpleName = mappedClass.getMappedClass().getSimpleName();
+//    String simpleName = mappedClass.getMappedClass().getSimpleName();
+
+    Class<?> type = field.getType();
+    String simpleName = type.getSimpleName();
+    if (Collection.class.isAssignableFrom(type)) {
+      ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+      if (genericType.getActualTypeArguments().length == 1) {
+        Class<?> f = (Class<?>) genericType.getActualTypeArguments()[0];
+        simpleName = f.getSimpleName();
+      }
+    }
 
     writer.writeString("$ref", simpleName);
 
