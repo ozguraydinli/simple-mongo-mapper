@@ -1,10 +1,5 @@
 package tr.com.hive.smm.mapping2;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.WriteConcern;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -14,7 +9,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.types.Decimal128;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MongoDBContainer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,16 +18,14 @@ import java.time.Instant;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
+import tr.com.hive.smm.TestHelper;
 import tr.com.hive.smm.model.ClassA1;
 import tr.com.hive.smm.model.ClassB;
 import tr.com.hive.smm.model.ClassB2;
@@ -51,12 +43,42 @@ class SimpleMapperTest {
 
   @Test
   void testSimpleMapper2() {
-    Clock clock = Clock.fixed(Instant.now(), ZoneId.of(ZoneOffset.UTC.getId()));
-    System.out.println(ZonedDateTime.now(clock));
-//    System.out.println(ZonedDateTime.now(clock).toInstant().toEpochMilli());
-    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()));
-    System.out.println(TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
-    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()) + TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
+//    System.out.println(Instant.now());
+//    System.out.println(OffsetDateTime.now());
+//    System.out.println(ZonedDateTime.now());
+//
+//    System.out.println(LocalDate.now());
+//    System.out.println(LocalDateTime.now());
+//
+//    Clock clock = Clock.fixed(Instant.parse("2024-04-20T14:07:01.291283Z"), ZoneId.of("Europe/Berlin"));
+//    Clock clock1 = Clock.fixed(Instant.parse("2024-04-20T18:07:01.291283Z"), ZoneId.of("Europe/Istanbul"));
+//
+////    System.out.println(Instant.now());
+////    System.out.println(LocalDateTime.now());
+////    System.out.println(OffsetDateTime.now());
+////    System.out.println(ZonedDateTime.now());
+////
+////    System.out.println();
+//
+//    System.out.println(Instant.now(clock));
+//////    System.out.println(Instant.now(clock).toEpochMilli());
+//////    System.out.println(LocalDateTime.now(clock));
+//////    System.out.println(OffsetDateTime.now(clock));
+//    ZonedDateTime zonedDateTime = ZonedDateTime.now(clock);
+//
+//    System.out.println(zonedDateTime);
+//    System.out.println(zonedDateTime.toLocalDateTime());
+//    System.out.println(zonedDateTime.toLocalDateTime().toInstant(ZoneOffset.UTC));
+//    System.out.println(zonedDateTime.toLocalDateTime().toInstant(
+//      ZoneId.of("Europe/Istanbul").getRules().getOffset(Instant.now(clock))
+//    ));
+//    System.out.println(zonedDateTime.toInstant());
+
+//    System.out.println(ZonedDateTime.now(clock));
+////    System.out.println(ZonedDateTime.now(clock).toInstant().toEpochMilli());
+//    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()));
+//    System.out.println(TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
+//    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()) + TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
 
 //    int nano = ZonedDateTime.now(clock).toInstant().getNano();
 //    System.out.println(nano);
@@ -77,7 +99,7 @@ class SimpleMapperTest {
 
   @Test
   void testSimpleMapper() {
-    withMongoClient(mongoClient -> {
+    TestHelper.withMongoClient(mongoClient -> {
 
       SimpleMapper simpleMapper = SimpleMapper.builder()
                                               .forPackage("tr.com.hive.smm.model")
@@ -92,7 +114,7 @@ class SimpleMapperTest {
 
       MongoCollection<ClassA1> collection = database.getCollection(ClassA1.class.getSimpleName(), ClassA1.class);
 
-      Clock clock = Clock.fixed(Instant.parse("2024-04-17T07:24:46.878915Z"), ZoneId.of(ZoneOffset.UTC.getId()));
+      Clock clock = Clock.fixed(Instant.parse("2024-04-17T07:24:46.878915Z"), ZoneId.of("Europe/Istanbul"));
 
       ClassA1 classA1 = new ClassA1();
 
@@ -110,7 +132,7 @@ class SimpleMapperTest {
 
       Date now = new Date();
       classA1.varDate = now;
-      classA1.varInstant = now.toInstant();
+      classA1.varInstant = Instant.now(clock);
 
       classA1.varStringTransient = "asdasdasd";
 
@@ -123,8 +145,6 @@ class SimpleMapperTest {
       classB2.varEnum = MyEnum.En2;
 //
       classA1.varClassB = classB2;
-
-      ObjectId idEmbeddedRecord = new ObjectId();
 
       classA1.varClassB2 = ClassB2.create(id);
 
@@ -246,7 +266,7 @@ class SimpleMapperTest {
       assertEquals(2, fromDb.varBoxedInt);
       assertEquals(new ObjectId(varId.toString()), fromDb.varObjectId);
       assertEquals(new Date(now.getTime()), fromDb.varDate);
-      assertEquals(Instant.from(now.toInstant()), fromDb.varInstant);
+      assertEquals(Instant.ofEpochMilli(Instant.now(clock).toEpochMilli()), fromDb.varInstant); // we are storing instant as BSONDate, so we are losing precision (nano).
       assertNull(fromDb.varStringTransient);
 
       assertNotNull(fromDb.varClassB);
@@ -350,26 +370,6 @@ class SimpleMapperTest {
       assertNotNull(fromDb.varNestedMapWithCustomCodec.get("k1").getFirst().get("k11" + 123));
 
     });
-  }
-
-  public void withMongoClient(Consumer<MongoClient> testBody) {
-    try (MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5")) {
-
-      mongoDBContainer.withStartupTimeout(Duration.ofSeconds(180L))
-                      .start();
-
-      System.out.println("Mongodb started: " + mongoDBContainer.getConnectionString());
-
-      try (MongoClient mongoClient = MongoClients.create(
-        MongoClientSettings.builder()
-                           .applyConnectionString(new ConnectionString(mongoDBContainer.getConnectionString()))
-                           .writeConcern(WriteConcern.ACKNOWLEDGED)
-                           .build()
-      )) {
-
-        testBody.accept(mongoClient);
-      }
-    }
   }
 
 }

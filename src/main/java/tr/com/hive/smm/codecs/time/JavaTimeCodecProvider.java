@@ -5,6 +5,7 @@ import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.Period;
@@ -19,6 +20,7 @@ import java.util.function.Function;
 public class JavaTimeCodecProvider implements CodecProvider {
 
   private static final Map<Class<?>, Function<CodecRegistry, Codec<?>>> CODEC_MAP = Map.of(
+//    Instant.class, registry -> new InstantCodec(),
     Duration.class, registry -> new DurationAsDocumentCodec(),
     Period.class, registry -> new PeriodAsDocumentCodec(),
     Month.class, registry -> new MonthAsDocumentCodec(),

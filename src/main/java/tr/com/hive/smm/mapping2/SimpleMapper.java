@@ -79,8 +79,8 @@ public class SimpleMapper {
     mappedClasses = getMappedClasses(allClasses);
 
     codecRegistry = CodecRegistries.fromRegistries(
-      MongoClientSettings.getDefaultCodecRegistry(),
       CodecRegistries.fromProviders(List.of(new BigIntegerCodecProvider(), new JavaTimeCodecProvider())),
+      MongoClientSettings.getDefaultCodecRegistry(),
       CodecRegistries.fromProviders(
         PojoCodecProvider.builder()
                          .automatic(true)

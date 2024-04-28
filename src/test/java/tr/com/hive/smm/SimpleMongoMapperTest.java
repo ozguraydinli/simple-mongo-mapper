@@ -16,6 +16,7 @@ import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -62,6 +63,7 @@ public class SimpleMongoMapperTest {
 
     Date now = new Date();
     document.put("varDate", now);
+    document.put("varInstant", now);
 
     ObjectId classBId = new ObjectId();
     document.put("refClassB", new DBRef(ClassBRef.class.getSimpleName(), classBId));
@@ -80,6 +82,7 @@ public class SimpleMongoMapperTest {
     assertEquals(1, classA.varInt);
     assertEquals(Integer.valueOf(1), classA.varBoxedInt);
     assertEquals(new Date(now.getTime()), classA.varDate);
+    assertEquals(now.toInstant(), classA.varInstant);
     assertEquals(new ObjectId(varId.toString()), classA.varObjectId);
     assertEquals(new ObjectId(classBId.toString()), classA.refClassB.id);
     assertEquals("s1", classA.varClassB.varString);
@@ -278,6 +281,7 @@ public class SimpleMongoMapperTest {
     classA.varBoxedInt = Integer.valueOf(1);
     classA.varEnum = MyEnum.En1;
     classA.varDate = new Date();
+    classA.varInstant = Instant.now();
 
     ObjectId id2 = new ObjectId();
     classA.varClassC = new ClassC(id2);
@@ -303,6 +307,7 @@ public class SimpleMongoMapperTest {
     assertEquals(Integer.valueOf(1), document.getInteger("varBoxedInt"));
     assertEquals("En1", document.getString("varEnum"));
     assertEquals(new Date(classA.varDate.getTime()), document.getDate("varDate"));
+    assertEquals(new Date(classA.varInstant.toEpochMilli()), document.getDate("varInstant"));
     assertEquals("s1", document(document.get("varClassB")).getString("varString"));
     assertEquals(new ObjectId(id2.toString()), document(document.get("varClassC")).getObjectId("Id"));
     assertEquals(Integer.valueOf(1), document(document.get("varClassB")).getInteger("varInt"));

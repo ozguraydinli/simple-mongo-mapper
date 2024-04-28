@@ -30,49 +30,21 @@ import java.time.ZonedDateTime;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * <p>
- * Encodes and decodes {@code ZonedDateTime} values to and from
- * {@code BSON Document}, such as:
- * <pre>
- * {
- *     dateTime: ...,
- *     offset: ...,
- *     zone: ...
- * }
- * </pre>
- * <p>
- * The values are stored using the following structure:
- * <ul>
- * <li>{@code dateTime} (a non-null value);
- * <li>{@code offset} (a non-null value);
- * <li>{@code zone} (a non-null value).
- * </ul>
- * The field values depend on provided codecs.
- * <p>
- * This type is <b>immutable</b>.
- */
+
 public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> {
 
+  private final Codec<LocalDateTime> localDateTimeCodec;
   private final Codec<ZoneOffset> zoneOffsetCodec;
   private final Codec<ZoneId> zoneIdCodec;
-  private final Codec<LocalDateTime> localDateTimeCodec;
 
-  /**
-   * Creates a {@code ZonedDateTimeAsDocumentCodec} using
-   * the provided codecs.
-   *
-   * @param zoneOffsetCodec not null
-   * @param zoneIdCodec     not null
-   */
-  private ZonedDateTimeAsDocumentCodec(Codec<ZoneOffset> zoneOffsetCodec, Codec<ZoneId> zoneIdCodec, Codec<LocalDateTime> localDateTimeCodec) {
+  private ZonedDateTimeAsDocumentCodec(Codec<LocalDateTime> localDateTimeCodec, Codec<ZoneOffset> zoneOffsetCodec, Codec<ZoneId> zoneIdCodec) {
+    this.localDateTimeCodec = requireNonNull(localDateTimeCodec, "localDateTimeCodec is null");
     this.zoneOffsetCodec = requireNonNull(zoneOffsetCodec, "zoneOffsetCodec is null");
     this.zoneIdCodec = requireNonNull(zoneIdCodec, "zoneIdCodec is null");
-    this.localDateTimeCodec = requireNonNull(localDateTimeCodec, "zoneIdCodec is null");
   }
 
   public ZonedDateTimeAsDocumentCodec(CodecRegistry codecRegistry) {
-    this(codecRegistry.get(ZoneOffset.class), codecRegistry.get(ZoneId.class), codecRegistry.get(LocalDateTime.class));
+    this(codecRegistry.get(LocalDateTime.class), codecRegistry.get(ZoneOffset.class), codecRegistry.get(ZoneId.class));
   }
 
   @Override
@@ -85,13 +57,14 @@ public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> 
     writer.writeName("dateTime");
     localDateTimeCodec.encode(writer, value.toLocalDateTime(), encoderContext);
 
-//    writer.writeDateTime(value.toInstant().toEpochMilli());
-
     writer.writeName("offset");
     zoneOffsetCodec.encode(writer, value.getOffset(), encoderContext);
 
-    writer.writeName("zoneId");
+    writer.writeName("zone");
     zoneIdCodec.encode(writer, value.getZone(), encoderContext);
+
+    writer.writeName("valueInstant");
+    writer.writeDateTime(value.toInstant().toEpochMilli()); // This is the field that comparisons should be done
 
     writer.writeString("value", value.toString());
 
@@ -108,6 +81,7 @@ public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> 
     localDateTimeCodec.decode(reader, decoderContext);
     zoneOffsetCodec.decode(reader, decoderContext);
     zoneIdCodec.decode(reader, decoderContext);
+    reader.readDateTime("valueInstant");
 
     String value = reader.readString("value");
 

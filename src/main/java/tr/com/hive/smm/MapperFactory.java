@@ -12,6 +12,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import java.util.Map;
 import tr.com.hive.smm.mapping.BigDecimalConverter;
 import tr.com.hive.smm.mapping.CollectionConverter;
 import tr.com.hive.smm.mapping.Converter;
+import tr.com.hive.smm.mapping.DateTimeConverter;
 import tr.com.hive.smm.mapping.DocumentConverter;
 import tr.com.hive.smm.mapping.EmptyConverter;
 import tr.com.hive.smm.mapping.EnumConverter;
@@ -49,7 +51,7 @@ public class MapperFactory {
     primitiveToClassMap.put(long.class, Long.class);
     primitiveToClassMap.put(float.class, Float.class);
     primitiveToClassMap.put(double.class, Double.class);
-    primitiveToClassMap.put(Date.class, Date.class);
+//    primitiveToClassMap.put(Date.class, Date.class);
   }
 
   private SimpleMongoMapper mongoMapper;
@@ -144,6 +146,8 @@ public class MapperFactory {
           } else {
             throw new MappingException("Unknown primitive type: " + value.getClass().getName());
           }
+        } else if (isDateTimeType(aClass)) {
+          return new DateTimeConverter(this, key, aClass);
         } else if (isKnownType(aClass)) {
           if (aClass == value.getClass()) {
             return new PrimitiveConverter(this, key, aClass);
@@ -179,6 +183,11 @@ public class MapperFactory {
     return true;
   }
 
+  public static boolean isDateTimeType(Class<?> clazz) {
+    return Date.class.isAssignableFrom(clazz) ||
+           Instant.class.isAssignableFrom(clazz);
+  }
+
   public static boolean isKnownType(Class<?> clazz) {
     return Integer.class.isAssignableFrom(clazz) ||
            Double.class.isAssignableFrom(clazz) ||
@@ -188,8 +197,9 @@ public class MapperFactory {
            Character.class.isAssignableFrom(clazz) ||
            Long.class.isAssignableFrom(clazz) ||
            Float.class.isAssignableFrom(clazz) ||
-           String.class.isAssignableFrom(clazz) ||
-           Date.class.isAssignableFrom(clazz);
+           String.class.isAssignableFrom(clazz);
+//    ||
+//           Date.class.isAssignableFrom(clazz);
   }
 
 }

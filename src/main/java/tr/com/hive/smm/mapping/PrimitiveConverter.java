@@ -24,9 +24,10 @@ public class PrimitiveConverter extends AbstractConverter implements Converter {
   public BsonValue encode(Object obj) throws MappingException {
 
     Class<?> clzz = obj.getClass();
-    if (Date.class.isAssignableFrom(clzz) || Date.class == clzz) {
-      return new BsonDateTime(((Date) obj).getTime());
-    } else if (Integer.class.isAssignableFrom(clzz) || int.class == clzz) {
+//    if (Date.class.isAssignableFrom(clzz) || Date.class == clzz) {
+//      return new BsonDateTime(((Date) obj).getTime());
+//    } else
+      if (Integer.class.isAssignableFrom(clzz) || int.class == clzz) {
       return new BsonInt32((Integer) obj);
     } else if (Double.class.isAssignableFrom(clzz) || double.class == clzz) {
       return new BsonDouble((Double) obj);

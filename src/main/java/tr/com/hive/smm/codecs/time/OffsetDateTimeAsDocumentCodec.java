@@ -23,48 +23,25 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * <p>
- * Encodes and decodes {@code OffsetDateTime} values to and from
- * {@code BSON Document}, such as:
- * <pre>
- * {
- *     dateTime: ...,
- *     offset: ...
- * }
- * </pre>
- * <p>
- * The values are stored using the following structure:
- * <ul>
- * <li>{@code dateTime} (a non-null value);
- * <li>{@code offset} (a non-null value).
- * </ul>
- * The field values depend on provided codecs.
- * <p>
- * This type is <b>immutable</b>.
- */
+
 public final class OffsetDateTimeAsDocumentCodec implements Codec<OffsetDateTime> {
 
+  private final Codec<LocalDateTime> localDateTimeCodec;
   private final Codec<ZoneOffset> zoneOffsetCodec;
 
-
-  /**
-   * Creates an {@code OffsetDateTimeAsDocumentCodec} using
-   * the provided codecs.
-   *
-   * @param zoneOffsetCodec not null
-   */
-  private OffsetDateTimeAsDocumentCodec(Codec<ZoneOffset> zoneOffsetCodec) {
+  private OffsetDateTimeAsDocumentCodec(Codec<LocalDateTime> localDateTimeCodec, Codec<ZoneOffset> zoneOffsetCodec) {
+    this.localDateTimeCodec = requireNonNull(localDateTimeCodec, "localDateTimeCodec is null");
     this.zoneOffsetCodec = requireNonNull(zoneOffsetCodec, "zoneOffsetCodec is null");
   }
 
   public OffsetDateTimeAsDocumentCodec(CodecRegistry codecRegistry) {
-    this(codecRegistry.get(ZoneOffset.class));
+    this(codecRegistry.get(LocalDateTime.class), codecRegistry.get(ZoneOffset.class));
   }
 
   @Override
@@ -75,10 +52,13 @@ public final class OffsetDateTimeAsDocumentCodec implements Codec<OffsetDateTime
     writer.writeStartDocument();
 
     writer.writeName("dateTime");
-    writer.writeDateTime(value.toInstant().toEpochMilli());
+    localDateTimeCodec.encode(writer, value.toLocalDateTime(), encoderContext);
 
     writer.writeName("offset");
     zoneOffsetCodec.encode(writer, value.getOffset(), encoderContext);
+
+    writer.writeName("valueInstant");
+    writer.writeDateTime(value.toInstant().toEpochMilli()); // This is the field that comparisons should be done
 
     writer.writeString("value", value.toString());
 
@@ -91,8 +71,10 @@ public final class OffsetDateTimeAsDocumentCodec implements Codec<OffsetDateTime
 
     reader.readStartDocument();
 
-    reader.readDateTime();
+    reader.readName("dateTime");
+    localDateTimeCodec.decode(reader, decoderContext);
     zoneOffsetCodec.decode(reader, decoderContext);
+    reader.readDateTime("valueInstant");
 
     String value = reader.readString("value");
 
