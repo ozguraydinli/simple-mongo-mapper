@@ -5,7 +5,6 @@ import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.Month;
 import java.time.OffsetDateTime;
 import java.time.Period;
@@ -23,7 +22,7 @@ public class JavaTimeCodecProvider implements CodecProvider {
 //    Instant.class, registry -> new InstantCodec(),
     Duration.class, registry -> new DurationAsDocumentCodec(),
     Period.class, registry -> new PeriodAsDocumentCodec(),
-    Month.class, registry -> new MonthAsDocumentCodec(),
+    Month.class, registry -> new MonthAsInt32Codec(),
     Year.class, registry -> new YearAsInt32Codec(),
     YearMonth.class, registry -> new YearMonthAsDocumentCodec(),
     OffsetDateTime.class, OffsetDateTimeAsDocumentCodec::new,

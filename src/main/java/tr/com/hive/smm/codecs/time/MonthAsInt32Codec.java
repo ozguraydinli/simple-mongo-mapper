@@ -10,31 +10,21 @@ import java.time.Month;
 
 import static java.util.Objects.requireNonNull;
 
-public class MonthAsDocumentCodec implements Codec<Month> {
+public class MonthAsInt32Codec implements Codec<Month> {
 
   @Override
   public void encode(BsonWriter writer, Month value, EncoderContext encoderContext) {
     requireNonNull(writer, "writer is null");
     requireNonNull(value, "value is null");
 
-    writer.writeStartDocument();
-
-    writer.writeString("monthString", value.name());
-    writer.writeInt32("monthInt", value.getValue());
-
-    writer.writeEndDocument();
+    writer.writeInt32(value.getValue());
   }
 
   @Override
   public Month decode(BsonReader reader, DecoderContext decoderContext) {
     requireNonNull(reader, "reader is null");
 
-    reader.readStartDocument();
-
-    reader.readString("monthString");
-    int monthInt = reader.readInt32("monthInt");
-
-    reader.readEndDocument();
+    int monthInt = reader.readInt32();
 
     return Month.of(monthInt);
   }
