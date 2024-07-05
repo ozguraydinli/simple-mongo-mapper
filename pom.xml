@@ -6,14 +6,14 @@
 
   <groupId>tr.com.hive</groupId>
   <artifactId>simple-mongo-mapper</artifactId>
-  <version>1.2.5</version>
+  <version>1.2.7</version>
   <packaging>jar</packaging>
 
   <name>simple-mongo-mapper</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mongo-java-driver.version>4.11.1</mongo-java-driver.version>
+    <mongo-java-driver.version>5.1.1</mongo-java-driver.version>
     <guava.version>33.0.0-jre</guava.version>
     <junit.version>5.10.2</junit.version>
     <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
