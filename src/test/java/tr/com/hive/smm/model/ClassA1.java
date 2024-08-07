@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoField;
@@ -26,6 +28,8 @@ import tr.com.hive.smm.mapping.annotation.MongoRef;
 import tr.com.hive.smm.mapping.annotation.MongoTransient;
 import tr.com.hive.smm.mapping2.MyCodec;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 @MongoEntity
 public class ClassA1 extends ClassA1Super {
 
@@ -60,7 +64,7 @@ public class ClassA1 extends ClassA1Super {
 
   public BigDecimal varBigDecimal;
 
-  public BigInteger varBigInteger;
+  private boolean isVarBoolean;
 
   @MongoRef
   public ClassBRef refClassB;
@@ -157,13 +161,13 @@ public class ClassA1 extends ClassA1Super {
     throw new UnsupportedOperationException("kokok");
   }
 
-  public void setRefClassBPrivate(ClassBRef refClassBPrivate) {
-    this.refClassBPrivate = refClassBPrivate;
-  }
-
-  public ClassBRef getRefClassBPrivate() {
-    return refClassBPrivate;
-  }
+//  public void setRefClassBPrivate(ClassBRef refClassBPrivate) {
+//    this.refClassBPrivate = refClassBPrivate;
+//  }
+//
+//  public ClassBRef getRefClassBPrivate() {
+//    return refClassBPrivate;
+//  }
 
   @MongoEntity
   public static class EmbeddedA1 {

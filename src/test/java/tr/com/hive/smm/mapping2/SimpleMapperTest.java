@@ -126,6 +126,7 @@ class SimpleMapperTest {
       classA1.varEnum = MyEnum.En1;
       classA1.varInt = 1;
       classA1.varBoxedInt = 2;
+      classA1.setVarBoolean(true);
 
       ObjectId varId = new ObjectId();
       classA1.varObjectId = varId;
@@ -154,7 +155,6 @@ class SimpleMapperTest {
       BigDecimal varBigDecimal = new BigDecimal(13);
       classA1.varBigDecimal = varBigDecimal;
       BigInteger varBigInteger = BigInteger.valueOf(1);
-      classA1.varBigInteger = varBigInteger;
 
       // collections
 
@@ -232,7 +232,8 @@ class SimpleMapperTest {
       collection.insertOne(classA1);
 
       Document document = database.getCollection(ClassA1.class.getSimpleName())
-                                  .find().first();
+                                  .find()
+                                  .first();
 
       Objects.requireNonNull(document);
       assertNotNull(document.getObjectId("_id"));
@@ -282,7 +283,8 @@ class SimpleMapperTest {
       assertEquals(1, fromDb.getVarIntSuper());
 
       assertEquals(new BigDecimal(varBigDecimal.toBigInteger()), fromDb.varBigDecimal);
-      assertEquals(varBigInteger, fromDb.varBigInteger);
+
+      assertTrue(fromDb.isVarBoolean());
 
       assertEquals(3, fromDb.varListOfString.size());
       assertEquals(List.of("a1", "a2", "a3"), fromDb.varListOfString);

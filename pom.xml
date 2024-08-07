@@ -6,10 +6,17 @@
 
   <groupId>tr.com.hive</groupId>
   <artifactId>simple-mongo-mapper</artifactId>
-  <version>1.2.7</version>
+  <version>1.2.8</version>
   <packaging>jar</packaging>
 
   <name>simple-mongo-mapper</name>
+
+	<repositories>
+		<repository>
+			<id>hive-navatom-maven</id>
+			<url>https://hive-713265656429.d.codeartifact.eu-central-1.amazonaws.com/maven/navatom-maven/</url>
+		</repository>
+	</repositories>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -19,6 +26,7 @@
     <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
 		<maven.compiler.plugin.version>3.12.1</maven.compiler.plugin.version>
 		<maven-resources-plugin.version>3.3.0</maven-resources-plugin.version>
+		<lombok.version>1.18.32</lombok.version>
 		<java.version>21</java.version>
   </properties>
 
@@ -93,6 +101,12 @@
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
       <version>0.10.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
 		</dependency>
   </dependencies>
 </project>
