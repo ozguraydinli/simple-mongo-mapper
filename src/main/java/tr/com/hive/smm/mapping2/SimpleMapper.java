@@ -94,6 +94,13 @@ public class SimpleMapper {
     return this;
   }
 
+  public List<? extends Class<?>> getMappedClasses() {
+    return mappedClasses.values()
+                        .stream()
+                        .map(MappedClass::getMappedClass)
+                        .toList();
+  }
+
   private Map<String, MappedClass> getMappedClasses(Class<?>[] array) {
     Map<String, MappedClass> map = new HashMap<>();
 

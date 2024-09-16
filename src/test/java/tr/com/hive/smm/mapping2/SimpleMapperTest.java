@@ -1,5 +1,6 @@
 package tr.com.hive.smm.mapping2;
 
+import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -24,12 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import tr.com.hive.smm.IndexHelper;
 import tr.com.hive.smm.TestHelper;
 import tr.com.hive.smm.model.ClassA1;
 import tr.com.hive.smm.model.ClassB;
 import tr.com.hive.smm.model.ClassB2;
 import tr.com.hive.smm.model.ClassBRef;
+import tr.com.hive.smm.model.IndexClass;
 import tr.com.hive.smm.model.MyComplexEnum;
 import tr.com.hive.smm.model.MyEnum;
 
@@ -40,62 +45,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SimpleMapperTest {
-
-  @Test
-  void testSimpleMapper2() {
-//    System.out.println(Instant.now());
-//    System.out.println(OffsetDateTime.now());
-//    System.out.println(ZonedDateTime.now());
-//
-//    System.out.println(LocalDate.now());
-//    System.out.println(LocalDateTime.now());
-//
-//    Clock clock = Clock.fixed(Instant.parse("2024-04-20T14:07:01.291283Z"), ZoneId.of("Europe/Berlin"));
-//    Clock clock1 = Clock.fixed(Instant.parse("2024-04-20T18:07:01.291283Z"), ZoneId.of("Europe/Istanbul"));
-//
-////    System.out.println(Instant.now());
-////    System.out.println(LocalDateTime.now());
-////    System.out.println(OffsetDateTime.now());
-////    System.out.println(ZonedDateTime.now());
-////
-////    System.out.println();
-//
-//    System.out.println(Instant.now(clock));
-//////    System.out.println(Instant.now(clock).toEpochMilli());
-//////    System.out.println(LocalDateTime.now(clock));
-//////    System.out.println(OffsetDateTime.now(clock));
-//    ZonedDateTime zonedDateTime = ZonedDateTime.now(clock);
-//
-//    System.out.println(zonedDateTime);
-//    System.out.println(zonedDateTime.toLocalDateTime());
-//    System.out.println(zonedDateTime.toLocalDateTime().toInstant(ZoneOffset.UTC));
-//    System.out.println(zonedDateTime.toLocalDateTime().toInstant(
-//      ZoneId.of("Europe/Istanbul").getRules().getOffset(Instant.now(clock))
-//    ));
-//    System.out.println(zonedDateTime.toInstant());
-
-//    System.out.println(ZonedDateTime.now(clock));
-////    System.out.println(ZonedDateTime.now(clock).toInstant().toEpochMilli());
-//    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()));
-//    System.out.println(TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
-//    System.out.println(TimeUnit.SECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getEpochSecond()) + TimeUnit.NANOSECONDS.toNanos(ZonedDateTime.now(clock).toInstant().getNano()));
-
-//    int nano = ZonedDateTime.now(clock).toInstant().getNano();
-//    System.out.println(nano);
-//    System.out.println((nano / 1_000_000) * 1_000_000);
-//    System.out.println((nano - (nano / 1_000_000) * 1_000_000) * 1_000);
-//
-//    long result = TimeUnit.MILLISECONDS.toNanos(ZonedDateTime.now(clock).toInstant().toEpochMilli()) + (nano - (nano / 1_000_000) * 1_000_000);
-//
-//    System.out.println(result);
-
-//    Instant.ofEpochSecond(
-//      TimeUnit.MICROSECONDS.toSeconds(microsSinceEpoch),
-//      TimeUnit.MICROSECONDS.toNanos(
-//        Math.floorMod(microsSinceEpoch, TimeUnit.SECONDS.toMicros(1))
-//      )
-//    );
-  }
 
   @Test
   void testSimpleMapper() {
@@ -111,6 +60,12 @@ class SimpleMapperTest {
 
       MongoDatabase database = mongoClient.getDatabase("sample")
                                           .withCodecRegistry(codecRegistry);
+
+      simpleMapper
+        .getMappedClasses()
+        .forEach(clazz -> new IndexHelper(database)
+          .createIndexes(clazz)
+        );
 
       MongoCollection<ClassA1> collection = database.getCollection(ClassA1.class.getSimpleName(), ClassA1.class);
 
@@ -370,6 +325,31 @@ class SimpleMapperTest {
       assertEquals(2, fromDb.varNestedMapWithCustomCodec.size());
       assertEquals(1, fromDb.varNestedMapWithCustomCodec.get("k1").getFirst().size());
       assertNotNull(fromDb.varNestedMapWithCustomCodec.get("k1").getFirst().get("k11" + 123));
+
+      // index tests
+      MongoCollection<IndexClass> collectionIndexClass = database.getCollection(IndexClass.class.getSimpleName(), IndexClass.class);
+
+      ListIndexesIterable<Document> indexes = collectionIndexClass.listIndexes();
+
+      List<Document> indexesAsList = StreamSupport
+        .stream(indexes.spliterator(), false)
+        .toList();
+
+      Map<String, Document> indexesAsMap = StreamSupport
+        .stream(indexes.spliterator(), false)
+        .collect(Collectors.toMap(
+          d -> d.get("key", Document.class).keySet().stream().findFirst().get(),
+          d -> d
+        ));
+
+      // +1 for the _id field
+      assertEquals(4 + 1, indexesAsList.size());
+      assertEquals(1, indexesAsMap.get("field1")
+                                  .get("key", Document.class)
+                                  .get("field1"));
+      assertEquals(-1, indexesAsMap.get("field2")
+                                   .get("key", Document.class)
+                                   .get("field2"));
 
     });
   }

@@ -14,13 +14,19 @@ import org.bson.codecs.EncoderContext;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import tr.com.hive.smm.mapping.annotation.index.*;
+import tr.com.hive.smm.mapping.annotation.index.Collation;
+import tr.com.hive.smm.mapping.annotation.index.Field;
+import tr.com.hive.smm.mapping.annotation.index.Index;
+import tr.com.hive.smm.mapping.annotation.index.IndexBuilder;
+import tr.com.hive.smm.mapping.annotation.index.IndexOptions;
+import tr.com.hive.smm.mapping.annotation.index.IndexType;
+import tr.com.hive.smm.mapping.annotation.index.Indexes;
 
 public class IndexHelper {
 
   private static final EncoderContext ENCODER_CONTEXT = EncoderContext.builder().build();
 
-  private MongoDatabase mongoDatabase;
+  private final MongoDatabase mongoDatabase;
 
   public IndexHelper(MongoDatabase mongoDatabase) {
     this.mongoDatabase = mongoDatabase;
@@ -39,7 +45,35 @@ public class IndexHelper {
     }
   }
 
-  private void createIndex(final MongoCollection collection, final Index index) {
+  /*
+   * This method is used by the new mapper, and assumes getSimpleName()
+   * as the default collection name.
+   *
+   * If there is a naming conflict drop/recreate index.
+   *
+   * */
+  public void createIndexes(Class<?> clazz) {
+    if (mongoDatabase == null) {
+      return;
+    }
+
+    String simpleName = clazz.getSimpleName();
+
+    MongoCollection<Document> collection = mongoDatabase.getCollection(simpleName);
+
+    if (!clazz.isAnnotationPresent(Indexes.class)) {
+      return;
+    }
+
+    Index[] indexes = clazz.getAnnotation(Indexes.class)
+                           .value();
+
+    for (Index index : indexes) {
+      createIndex(collection, index);
+    }
+  }
+
+  private void createIndex(final MongoCollection<Document> collection, final Index index) {
     Index normalized = IndexBuilder.normalize(index);
 //    Index normalized = index;
 
