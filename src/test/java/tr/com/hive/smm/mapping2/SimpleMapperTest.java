@@ -180,8 +180,8 @@ class SimpleMapperTest {
       ObjectId id5 = new ObjectId();
       ObjectId id6 = new ObjectId();
       classA1.refListOfClassA = List.of(
-        ClassA1.create(id5, "ss"),
-        ClassA1.create(id6, "s1")
+        ClassA1.create(id5, "ss", classA1),
+        ClassA1.create(id6, "s1", classA1)
       );
 
       collection.insertOne(classA1);

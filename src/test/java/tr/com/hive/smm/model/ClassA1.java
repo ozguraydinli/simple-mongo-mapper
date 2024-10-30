@@ -20,6 +20,7 @@ import java.util.Set;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoField;
@@ -37,6 +38,14 @@ public class ClassA1 extends ClassA1Super {
     ClassA1 classA1 = new ClassA1();
     classA1.id = id;
     classA1.varString = s;
+    return classA1;
+  }
+
+  public static ClassA1 create(ObjectId id, String s, ClassA1 parent) {
+    ClassA1 classA1 = new ClassA1();
+    classA1.id = id;
+    classA1.varString = s;
+    classA1.refParentClassA = parent;
     return classA1;
   }
 
@@ -121,6 +130,10 @@ public class ClassA1 extends ClassA1Super {
   public Set<String> varSetOfString;
 
   public Set<MyEnum> varSetOfEnum;
+
+  @ToString.Exclude
+  @MongoRef
+  public ClassA1 refParentClassA;
 
   @MongoRef
   public List<ClassA1> refListOfClassA;
