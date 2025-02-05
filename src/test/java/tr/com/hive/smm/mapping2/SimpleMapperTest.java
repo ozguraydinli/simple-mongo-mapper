@@ -4,6 +4,7 @@ import com.mongodb.client.ListIndexesIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -139,6 +140,7 @@ class SimpleMapperTest {
       classA1.varMapOfString = Map.of("k1", "v1", "k2", "v2");
       classA1.varMapOfString2 = Map.of();
       classA1.varMapOfEnumString = Map.of(MyEnum.En1, "v1");
+      classA1.varMapOfEnumToEnum = Map.of(MyEnum.En1, MyEnum.En2);
       ObjectId id3 = new ObjectId();
       classA1.varMapOfObjectIdString = Map.of(id3, "v1");
       classA1.varMapOfIntegerString = Map.of(1, "v1", 2, "v2", 3, "v3");
@@ -282,6 +284,9 @@ class SimpleMapperTest {
       assertEquals(1, fromDb.varMapOfEnumString.size());
       assertEquals("v1", fromDb.varMapOfEnumString.get(MyEnum.En1));
       assertNull(fromDb.varMapOfEnumString.get(MyEnum.En2));
+      assertEquals(1, fromDb.varMapOfEnumToEnum.size());
+      assertEquals(MyEnum.En2, fromDb.varMapOfEnumToEnum.get(MyEnum.En1));
+      assertNull(fromDb.varMapOfEnumToEnum.get(MyEnum.En2));
       assertEquals(1, fromDb.varMapOfObjectIdString.size());
       assertEquals("v1", fromDb.varMapOfObjectIdString.get(id3));
       assertEquals(3, fromDb.varMapOfIntegerString.size());
@@ -351,6 +356,20 @@ class SimpleMapperTest {
                                    .get("key", Document.class)
                                    .get("field2"));
 
+      // update
+
+      collection.updateOne(
+        Filters.eq("_id", classA1.id),
+        Updates.set("varMapOfEnumToEnum", Map.of("En2", "En1"))
+      );
+
+      ClassA1 fromDb2 = collection.find(Filters.eq("_id", classA1.id)).first();
+
+      Objects.requireNonNull(fromDb2);
+
+      assertEquals(1, fromDb2.varMapOfEnumToEnum.size());
+      assertEquals(MyEnum.En1, fromDb2.varMapOfEnumToEnum.get(MyEnum.En2));
+      assertNull(fromDb2.varMapOfEnumToEnum.get(MyEnum.En1));
     });
   }
 

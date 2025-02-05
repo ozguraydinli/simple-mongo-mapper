@@ -7,7 +7,6 @@ import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.Year;
@@ -28,6 +27,7 @@ import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoRef;
 import tr.com.hive.smm.mapping.annotation.MongoTransient;
 import tr.com.hive.smm.mapping2.MyCodec;
+import tr.com.hive.smm.mapping2.MyEnumCodec;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -108,6 +108,9 @@ public class ClassA1 extends ClassA1Super {
   public Map<String, String> varMapOfString2;
 
   public Map<MyEnum, String> varMapOfEnumString;
+
+  @MongoCustomConverter(codec = MyEnumCodec.class)
+  public Map<MyEnum, MyEnum> varMapOfEnumToEnum;
 
   public Map<ObjectId, String> varMapOfObjectIdString;
 
