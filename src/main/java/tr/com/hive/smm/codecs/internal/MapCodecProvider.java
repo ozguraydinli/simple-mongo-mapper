@@ -17,7 +17,6 @@ public class MapCodecProvider implements PropertyCodecProvider {
 
       return new MapCodec(
         type.getType(),
-        registry.get(type.getTypeParameters().get(0)),
         registry.get(type.getTypeParameters().get(1)),
         keyType
       );

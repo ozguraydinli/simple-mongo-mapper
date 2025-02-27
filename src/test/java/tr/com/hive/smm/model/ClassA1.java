@@ -27,7 +27,6 @@ import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.mapping.annotation.MongoRef;
 import tr.com.hive.smm.mapping.annotation.MongoTransient;
 import tr.com.hive.smm.mapping2.MyCodec;
-import tr.com.hive.smm.mapping2.MyEnumCodec;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -109,12 +108,13 @@ public class ClassA1 extends ClassA1Super {
 
   public Map<MyEnum, String> varMapOfEnumString;
 
-  @MongoCustomConverter(codec = MyEnumCodec.class)
   public Map<MyEnum, MyEnum> varMapOfEnumToEnum;
 
   public Map<ObjectId, String> varMapOfObjectIdString;
 
   public Map<Integer, String> varMapOfIntegerString;
+
+  public Map<Character, String> varMapOfCharacterString;
 
   public Map<String, ObjectId> varMapOfObjectId;
 
