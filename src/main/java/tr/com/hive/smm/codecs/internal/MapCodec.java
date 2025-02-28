@@ -44,26 +44,16 @@ public class MapCodec<K, T> implements Codec<Map<K, T>> {
   }
 
   private void writeKey(BsonWriter writer, Entry<K, T> entry) {
+    String asString = entry.getKey().toString();
     if (getKeyClass().isEnum()) {
-      writer.writeName(((Enum<?>) entry.getKey()).name());
-
-    } else if (isPrimitive(getKeyClass())) {
-      writer.writeName(entry.getKey() + "");
-
-    } else if (getKeyClass() == ObjectId.class) {
-      writer.writeName(((ObjectId) entry.getKey()).toString());
-
+      writer.writeName(Enum.valueOf(getKeyClass().asSubclass(Enum.class), asString).name());
     } else {
-      writer.writeName(entry.getKey().toString());
+      writer.writeName(asString);
     }
   }
 
   private Class<?> getKeyClass() {
     return keyType.getType();
-  }
-
-  protected boolean isPrimitive(Class<?> clazz) {
-    return clazz == Integer.class || clazz == Long.class || clazz == Double.class || clazz == Character.class;
   }
 
   @Override
