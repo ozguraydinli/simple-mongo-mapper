@@ -1,6 +1,7 @@
 package tr.com.hive.smm.mapping2;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.MongoDatabase;
 
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -17,6 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tr.com.hive.smm.IndexHelper;
 import tr.com.hive.smm.codecs.BigIntegerCodecProvider;
 import tr.com.hive.smm.codecs.internal.MapCodecProvider;
 import tr.com.hive.smm.codecs.time.JavaTimeCodecProvider;
@@ -99,6 +101,13 @@ public class SimpleMapper {
                         .stream()
                         .map(MappedClass::getMappedClass)
                         .toList();
+  }
+
+  public void createIndexesForDatabase(MongoDatabase database) {
+    getMappedClasses().forEach(
+      clazz -> new IndexHelper(database)
+        .createIndexes(clazz)
+    );
   }
 
   private Map<String, MappedClass> getMappedClasses(Class<?>[] array) {

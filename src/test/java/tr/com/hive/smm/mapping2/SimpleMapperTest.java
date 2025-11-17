@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import tr.com.hive.smm.IndexHelper;
 import tr.com.hive.smm.TestHelper;
 import tr.com.hive.smm.model.ClassA1;
 import tr.com.hive.smm.model.ClassB;
@@ -62,11 +61,7 @@ class SimpleMapperTest {
       MongoDatabase database = mongoClient.getDatabase("sample")
                                           .withCodecRegistry(codecRegistry);
 
-      simpleMapper
-        .getMappedClasses()
-        .forEach(clazz -> new IndexHelper(database)
-          .createIndexes(clazz)
-        );
+      simpleMapper.createIndexesForDatabase(database);
 
       MongoCollection<ClassA1> collection = database.getCollection(ClassA1.class.getSimpleName(), ClassA1.class);
 

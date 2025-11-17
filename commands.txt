@@ -1,17 +1,17 @@
 mvn deploy:deploy-file -DgroupId=tr.com.hive \
  -DartifactId=simple-mongo-mapper \
- -Dversion=1.2.11 \
+ -Dversion=1.2.12 \
  -Dpackaging=jar \
- -Dfile=simple-mongo-mapper-1.2.11.jar \
+ -Dfile=simple-mongo-mapper-1.2.12.jar \
  -DrepositoryId=hive-navatom-maven    \
  -Durl=https://hive-713265656429.d.codeartifact.eu-central-1.amazonaws.com/maven/maven-central-store/
 
 
 mvn deploy:deploy-file -DgroupId=tr.com.hive \
  -DartifactId=simple-mongo-mapper \
- -Dversion=1.2.11 \
+ -Dversion=1.2.12 \
  -Dpackaging=java-source \
  -DgeneratePom=false \
- -Dfile=simple-mongo-mapper-1.2.11-sources.jar \
+ -Dfile=simple-mongo-mapper-1.2.12-sources.jar \
  -DrepositoryId=hive-navatom-maven    \
  -Durl=https://hive-713265656429.d.codeartifact.eu-central-1.amazonaws.com/maven/maven-central-store/
