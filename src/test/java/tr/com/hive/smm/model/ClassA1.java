@@ -78,6 +78,9 @@ public class ClassA1 extends ClassA1Super {
   public ClassBRef refClassB;
 
   @MongoRef
+  public ClassBRef2 refClassB2;
+
+  @MongoRef
   private ClassBRef refClassBPrivate;
 
   public ClassB varClassB;

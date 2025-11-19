@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping2.MappedClass;
 import tr.com.hive.smm.util.ReflectionUtils;
 
@@ -110,6 +111,8 @@ public class MongoRefCodec<T> implements Codec<T> {
         Class<?> f = (Class<?>) genericType.getActualTypeArguments()[0];
         simpleName = f.getSimpleName();
       }
+    } else if (clazz.isAnnotationPresent(MongoEntity.class)) {
+      simpleName = mappedClass.getCollectionName();
     }
 
     writer.writeString("$ref", simpleName);
@@ -156,12 +159,11 @@ public class MongoRefCodec<T> implements Codec<T> {
 
     try {
       Class<?> fieldType = getType(field);
+      MappedClass mappedClass = classMap.get(fieldType.getName());
 
-      if (!fieldType.getSimpleName().equals(ref)) {
+      if (!mappedClass.getCollectionName().equals(ref)) {
         throw new IllegalStateException("Type mismatch fieldType: " + fieldType.getSimpleName() + " ref: " + ref);
       }
-
-      MappedClass mappedClass = classMap.get(fieldType.getName());
 
       Class<?> clazz = mappedClass.getMappedClass();
 

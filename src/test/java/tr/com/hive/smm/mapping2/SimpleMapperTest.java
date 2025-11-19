@@ -34,6 +34,7 @@ import tr.com.hive.smm.model.ClassA1;
 import tr.com.hive.smm.model.ClassB;
 import tr.com.hive.smm.model.ClassB2;
 import tr.com.hive.smm.model.ClassBRef;
+import tr.com.hive.smm.model.ClassBRef2;
 import tr.com.hive.smm.model.IndexClass;
 import tr.com.hive.smm.model.MyComplexEnum;
 import tr.com.hive.smm.model.MyEnum;
@@ -174,6 +175,11 @@ class SimpleMapperTest {
       classA1.refClassB = classB;
       classA1.setRefClassBPrivate(classB);
 
+      ObjectId classB2Id = new ObjectId();
+      ClassBRef2 classBRef2 = new ClassBRef2(classB2Id);
+      classBRef2.varString = "str2";
+      classA1.refClassB2 = classBRef2;
+
       ObjectId id5 = new ObjectId();
       ObjectId id6 = new ObjectId();
       classA1.refListOfClassA = List.of(
@@ -306,6 +312,9 @@ class SimpleMapperTest {
       assertNotNull(fromDb.getRefClassBPrivate().id);
       assertNull(fromDb.getRefClassBPrivate().varString);
       assertEquals(new ObjectId(classBId.toString()), fromDb.getRefClassBPrivate().id);
+      assertNotNull(fromDb.refClassB2);
+      assertNotNull(fromDb.refClassB2.id);
+      assertNull(fromDb.refClassB2.varString);
 
       assertEquals(2, fromDb.refListOfClassA.size());
       assertEquals(id5, fromDb.refListOfClassA.getFirst().id);

@@ -1,5 +1,7 @@
 package tr.com.hive.smm.mapping2;
 
+import com.google.common.base.Strings;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,10 +9,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
+
 public class MappedClass {
 
   private final Class<?> clazz;
   private Field idField;
+
+  private final String collectionName;
 
   private final List<Field> mongoRefFields = new ArrayList<>();
 
@@ -22,6 +28,20 @@ public class MappedClass {
 
   public MappedClass(Class<?> clazz) {
     this.clazz = clazz;
+
+    if (!clazz.isAnnotationPresent(MongoEntity.class)) {
+      collectionName = clazz.getSimpleName();
+      return;
+    }
+
+    var mongoEntity = clazz.getAnnotation(MongoEntity.class);
+    String mongoEntityValue = mongoEntity.value();
+    if (Strings.isNullOrEmpty(mongoEntityValue)) {
+      collectionName = clazz.getSimpleName();
+    } else {
+      collectionName = mongoEntityValue;
+    }
+
   }
 
   public void setIdField(Field idField) {
@@ -62,6 +82,10 @@ public class MappedClass {
 
   public Map<Field, Class<?>> getFieldToCodecClassMap() {
     return Collections.unmodifiableMap(fieldToCodecClassMap);
+  }
+
+  public String getCollectionName() {
+    return collectionName;
   }
 
   public Class<?> getMappedClass() {

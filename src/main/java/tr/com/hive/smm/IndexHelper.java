@@ -45,6 +45,19 @@ public class IndexHelper {
     }
   }
 
+  public MongoDatabase getDatabase() {
+    return mongoDatabase;
+  }
+
+  public void dropIndexes(Class<?> clazz) {
+    if (mongoDatabase == null) {
+      return;
+    }
+
+    MongoCollection<Document> collection = getCollection(clazz);
+    collection.dropIndexes();
+  }
+
   /*
    * This method is used by the new mapper, and assumes getSimpleName()
    * as the default collection name.
@@ -57,9 +70,7 @@ public class IndexHelper {
       return;
     }
 
-    String simpleName = clazz.getSimpleName();
-
-    MongoCollection<Document> collection = mongoDatabase.getCollection(simpleName);
+    MongoCollection<Document> collection = getCollection(clazz);
 
     if (!clazz.isAnnotationPresent(Indexes.class)) {
       return;
@@ -71,6 +82,11 @@ public class IndexHelper {
     for (Index index : indexes) {
       createIndex(collection, index);
     }
+  }
+
+  private MongoCollection<Document> getCollection(Class<?> clazz) {
+    String simpleName = clazz.getSimpleName();
+    return mongoDatabase.getCollection(simpleName);
   }
 
   private void createIndex(final MongoCollection<Document> collection, final Index index) {
