@@ -53,9 +53,17 @@ class SimpleMapperTest {
 
       SimpleMapper simpleMapper = SimpleMapper.builder()
                                               .forPackage("tr.com.hive.smm.model")
+                                              .filterClassName(className -> !className.startsWith("F_"))
 //                                              .forClass(EmbeddedA1.class)
 //                                              .forClass(ClassB2.class)
                                               .build();
+
+      var filteredClasses = simpleMapper.getMappedClasses()
+                                        .stream()
+                                        .filter(clazz -> clazz.getSimpleName().startsWith("F_"))
+                                        .toList();
+
+      assertTrue(filteredClasses.isEmpty());
 
       CodecRegistry codecRegistry = simpleMapper.getCodecRegistry();
 

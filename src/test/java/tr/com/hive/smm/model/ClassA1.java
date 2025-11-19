@@ -218,4 +218,8 @@ public class ClassA1 extends ClassA1Super {
 
   }
 
+  public static class F_ClassStartsWithF {
+    public ObjectId id;
+  }
+
 }

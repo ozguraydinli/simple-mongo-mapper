@@ -6,7 +6,7 @@
 
   <groupId>tr.com.hive</groupId>
   <artifactId>simple-mongo-mapper</artifactId>
-  <version>1.2.15</version>
+  <version>1.2.16</version>
   <packaging>jar</packaging>
 
   <name>simple-mongo-mapper</name>

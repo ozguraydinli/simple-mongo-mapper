@@ -1,5 +1,7 @@
 package tr.com.hive.smm.mapping2;
 
+import com.google.common.base.Predicates;
+
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoDatabase;
 
@@ -15,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +42,8 @@ public class SimpleMapper {
   private CodecRegistry codecRegistry;
 
   private Map<String, MappedClass> mappedClasses;
+
+  private Predicate<String> classNameFilter;
 
   private SimpleMapper() {
     this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -75,6 +80,7 @@ public class SimpleMapper {
                                                      .flatMap(SimpleMapperHelper::getClasses);
 
     Class<?>[] allClasses = Stream.concat(classesFromPackages, classesFromClassList)
+                                  .filter(clazz -> classNameFilter.test(clazz.getSimpleName()))
                                   .collect(Collectors.toUnmodifiableSet())
                                   .toArray(Class<?>[]::new);
 
@@ -151,6 +157,7 @@ public class SimpleMapper {
 
     private final List<String> packages = new ArrayList<>();
     private final List<Class<?>> classList = new ArrayList<>();
+    private Predicate<String> predicate = Predicates.alwaysTrue();
 
     public SimpleMapperBuilder forClass(Class<?> clazz) {
       classList.add(clazz);
@@ -162,10 +169,20 @@ public class SimpleMapper {
       return this;
     }
 
+    public SimpleMapperBuilder filterClassName(Predicate<String> predicate) {
+      if (predicate == null) {
+        throw new IllegalArgumentException("Predicate is null");
+      }
+
+      this.predicate = predicate;
+      return this;
+    }
+
     public SimpleMapper build() {
       SimpleMapper simpleMapper = new SimpleMapper();
       simpleMapper.packages.addAll(packages);
       simpleMapper.classList.addAll(classList);
+      simpleMapper.classNameFilter = predicate;
 
       return simpleMapper.create();
     }
