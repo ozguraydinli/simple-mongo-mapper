@@ -7,8 +7,11 @@ import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.MonthDay;
+import java.time.OffsetTime;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZonedDateTime;
@@ -170,10 +173,13 @@ public class ClassA1 extends ClassA1Super {
   public EmbeddedA1WithoutAnnotation varEmbeddedA1WithoutAnnotation;
 
   public ZonedDateTime varZonedDateTime;
+  public OffsetTime varOffsetTime;
   public YearMonth varYearMonth;
+  public MonthDay varMonthDay;
   public Year varYear;
   public Duration varDuration;
   public Duration varDuration2;
+  public DayOfWeek varDayOfWeek;
 
   @BsonIgnore
   public String getOther() {

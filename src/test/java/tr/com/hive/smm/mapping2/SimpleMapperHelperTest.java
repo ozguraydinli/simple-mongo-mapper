@@ -38,7 +38,10 @@ class SimpleMapperHelperTest {
     List<Class<?>> classes3 = SimpleMapperHelper.getClasses(ClassA1.class)
                                                 .toList();
 
-    assertEquals(4, classes3.size());
+    classes3.forEach(System.out::println);
+    System.out.println(classes3.size());
+
+    assertEquals(5, classes3.size());
 
   }
 

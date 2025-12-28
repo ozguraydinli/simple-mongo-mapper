@@ -15,8 +15,11 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.MonthDay;
+import java.time.OffsetTime;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -169,12 +172,15 @@ class SimpleMapperTest {
 
       // java.time
       classA1.varZonedDateTime = ZonedDateTime.now(clock);
+      classA1.varOffsetTime = OffsetTime.now(clock);
       classA1.varYearMonth = YearMonth.now(clock);
       classA1.varYear = Year.now(clock);
       Duration dur1 = Duration.ofDays(455);
       classA1.varDuration = dur1;
       Duration dur2 = Duration.ofSeconds(100, 99L);
       classA1.varDuration2 = dur2;
+      classA1.varDayOfWeek = DayOfWeek.SATURDAY;
+      classA1.varMonthDay = MonthDay.of(3, 4);
 
       // mongorefs
       ObjectId classBId = new ObjectId();
@@ -333,10 +339,14 @@ class SimpleMapperTest {
       // java.time
       assertNotNull(fromDb.varZonedDateTime);
       assertEquals(ZonedDateTime.now(clock), fromDb.varZonedDateTime);
+      assertNotNull(fromDb.varOffsetTime);
+      assertEquals(OffsetTime.now(clock), fromDb.varOffsetTime);
       assertNotNull(fromDb.varYearMonth);
       assertEquals(YearMonth.now(clock), fromDb.varYearMonth);
       assertNotNull(fromDb.varYear);
       assertEquals(Year.now(clock), fromDb.varYear);
+      assertEquals(DayOfWeek.SATURDAY, fromDb.varDayOfWeek);
+      assertEquals(MonthDay.of(3, 4), fromDb.varMonthDay);
 
       // custom converter
       assertEquals(2, fromDb.varNestedMapWithCustomCodec.size());

@@ -23,42 +23,43 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetTime;
 import java.time.ZoneOffset;
 
 import static java.util.Objects.requireNonNull;
 
 
-public final class OffsetDateTimeAsDocumentCodec implements Codec<OffsetDateTime> {
+public final class OffsetTimeAsDocumentCodec implements Codec<OffsetTime> {
 
-  private final Codec<LocalDateTime> localDateTimeCodec;
+  private final Codec<LocalTime> localTimeCodec;
   private final Codec<ZoneOffset> zoneOffsetCodec;
 
-  private OffsetDateTimeAsDocumentCodec(Codec<LocalDateTime> localDateTimeCodec, Codec<ZoneOffset> zoneOffsetCodec) {
-    this.localDateTimeCodec = requireNonNull(localDateTimeCodec, "localDateTimeCodec is null");
+  private OffsetTimeAsDocumentCodec(Codec<LocalTime> localTimeCodec, Codec<ZoneOffset> zoneOffsetCodec) {
+    this.localTimeCodec = requireNonNull(localTimeCodec, "localTimeCodec is null");
     this.zoneOffsetCodec = requireNonNull(zoneOffsetCodec, "zoneOffsetCodec is null");
   }
 
-  public OffsetDateTimeAsDocumentCodec(CodecRegistry codecRegistry) {
-    this(codecRegistry.get(LocalDateTime.class), codecRegistry.get(ZoneOffset.class));
+  public OffsetTimeAsDocumentCodec(CodecRegistry codecRegistry) {
+    this(codecRegistry.get(LocalTime.class), codecRegistry.get(ZoneOffset.class));
   }
 
   @Override
-  public void encode(BsonWriter writer, OffsetDateTime value, EncoderContext encoderContext) {
+  public void encode(BsonWriter writer, OffsetTime value, EncoderContext encoderContext) {
     requireNonNull(writer, "writer is null");
     requireNonNull(value, "value is null");
 
     writer.writeStartDocument();
 
-    writer.writeName("dateTime");
-    localDateTimeCodec.encode(writer, value.toLocalDateTime(), encoderContext);
+    writer.writeName("time");
+    localTimeCodec.encode(writer, value.toLocalTime(), encoderContext);
 
     writer.writeName("offset");
     zoneOffsetCodec.encode(writer, value.getOffset(), encoderContext);
 
     writer.writeName("value");
-    writer.writeDateTime(value.toInstant().toEpochMilli()); // This is the field that comparisons should be done
+    writer.writeDateTime(value.atDate(LocalDate.ofEpochDay(0L)).toInstant().toEpochMilli()); // This is the field that comparisons should be done
 
     writer.writeString("valueString", value.toString());
 
@@ -66,13 +67,13 @@ public final class OffsetDateTimeAsDocumentCodec implements Codec<OffsetDateTime
   }
 
   @Override
-  public OffsetDateTime decode(BsonReader reader, DecoderContext decoderContext) {
+  public OffsetTime decode(BsonReader reader, DecoderContext decoderContext) {
     requireNonNull(reader, "reader is null");
 
     reader.readStartDocument();
 
-    reader.readName("dateTime");
-    localDateTimeCodec.decode(reader, decoderContext);
+    reader.readName("time");
+    localTimeCodec.decode(reader, decoderContext);
     zoneOffsetCodec.decode(reader, decoderContext);
     reader.readDateTime("value");
 
@@ -80,12 +81,12 @@ public final class OffsetDateTimeAsDocumentCodec implements Codec<OffsetDateTime
 
     reader.readEndDocument();
 
-    return OffsetDateTime.parse(value);
+    return OffsetTime.parse(value);
   }
 
   @Override
-  public Class<OffsetDateTime> getEncoderClass() {
-    return OffsetDateTime.class;
+  public Class<OffsetTime> getEncoderClass() {
+    return OffsetTime.class;
   }
 
 }

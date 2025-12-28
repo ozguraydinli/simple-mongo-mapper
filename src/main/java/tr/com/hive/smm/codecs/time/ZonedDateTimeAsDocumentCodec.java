@@ -63,10 +63,10 @@ public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> 
     writer.writeName("zone");
     zoneIdCodec.encode(writer, value.getZone(), encoderContext);
 
-    writer.writeName("valueInstant");
+    writer.writeName("value");
     writer.writeDateTime(value.toInstant().toEpochMilli()); // This is the field that comparisons should be done
 
-    writer.writeString("value", value.toString());
+    writer.writeString("valueString", value.toString());
 
     writer.writeEndDocument();
   }
@@ -81,9 +81,9 @@ public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> 
     localDateTimeCodec.decode(reader, decoderContext);
     zoneOffsetCodec.decode(reader, decoderContext);
     zoneIdCodec.decode(reader, decoderContext);
-    reader.readDateTime("valueInstant");
+    reader.readDateTime("value");
 
-    String value = reader.readString("value");
+    String value = reader.readString("valueString");
 
     reader.readEndDocument();
 
