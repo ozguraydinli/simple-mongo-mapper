@@ -166,7 +166,7 @@ public class ClassA1 extends ClassA1Super {
   @MongoTransient
   public String varStringTransient;
 
-  @MongoCustomConverter(codec = MyCodec.class)
+  @MongoCustomConverter(codec = MyCodec.class, converterClass = MyCustomConverter.class)
   public Map<String, List<Map<String, String>>> varNestedMapWithCustomCodec = Maps.newHashMap();
 
   @MongoTransient
@@ -225,7 +225,9 @@ public class ClassA1 extends ClassA1Super {
   }
 
   public static class F_ClassStartsWithF {
+
     public ObjectId id;
+
   }
 
 }

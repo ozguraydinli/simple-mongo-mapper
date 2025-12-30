@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import tr.com.hive.smm.mapping.Converter;
 import tr.com.hive.smm.mapping.MappingException;
@@ -26,6 +28,7 @@ import tr.com.hive.smm.mapping.annotation.MongoCustomConverter;
 import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.MongoId;
 import tr.com.hive.smm.model.ClassA;
+import tr.com.hive.smm.model.ClassA1;
 import tr.com.hive.smm.model.ClassB;
 import tr.com.hive.smm.model.ClassBRef;
 import tr.com.hive.smm.model.ClassC;
@@ -38,6 +41,7 @@ import tr.com.hive.smm.model.PrivateConsClazz;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created by ozgur on 4/4/17.
@@ -412,13 +416,37 @@ public class SimpleMongoMapperTest {
   @Test
   public void test_CustomConverter() {
     ObjectId id = new ObjectId();
-    Document document = new Document("_id", id).append("stringField", "field value");
+
+    Document document = new Document("_id", id)
+      .append("varString", "field value")
+      .append("varNestedMapWithCustomCodec", new Document(
+        Map.of(
+          "k1", Lists.newArrayList(
+            List.of(
+              new Document(
+                Map.of(
+                  "k111", "v111",
+                  "k112", "v112"
+                )
+              ),
+              new Document(
+                Map.of(
+                  "k121", "v121",
+                  "k122", "v122"
+                )
+              )
+            )
+          )
+        )
+      ));
 
     SimpleMongoMapper simpleMongoMapper = new SimpleMongoMapper();
-    CustomConverterClazz clazz = simpleMongoMapper.fromDocument(document, CustomConverterClazz.class);
+    ClassA1 clazz = simpleMongoMapper.fromDocument(document, ClassA1.class);
 
     assertEquals(id, clazz.id);
-    assertEquals("field valuea", clazz.stringField);
+    assertEquals("field value", clazz.varString);
+    assertNotNull(clazz.varNestedMapWithCustomCodec);
+    assertTrue(clazz.varNestedMapWithCustomCodec.get("k1").get(0).containsKey("k111123"));
   }
 
   @Test
