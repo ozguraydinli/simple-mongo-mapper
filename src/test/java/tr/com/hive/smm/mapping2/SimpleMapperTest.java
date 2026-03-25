@@ -33,11 +33,13 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import tr.com.hive.smm.TestHelper;
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.model.ClassA1;
 import tr.com.hive.smm.model.ClassB;
 import tr.com.hive.smm.model.ClassB2;
 import tr.com.hive.smm.model.ClassBRef;
 import tr.com.hive.smm.model.ClassBRef2;
+import tr.com.hive.smm.model.Index2Class;
 import tr.com.hive.smm.model.IndexClass;
 import tr.com.hive.smm.model.MyComplexEnum;
 import tr.com.hive.smm.model.MyEnum;
@@ -375,6 +377,32 @@ class SimpleMapperTest {
                                   .get("key", Document.class)
                                   .get("field1"));
       assertEquals(-1, indexesAsMap.get("field2")
+                                   .get("key", Document.class)
+                                   .get("field2"));
+
+      MongoEntity annotation = Index2Class.class.getAnnotation(MongoEntity.class);
+      String value = annotation.value();
+      MongoCollection<Index2Class> collectionIndex2Class = database.getCollection(value, Index2Class.class);
+
+      ListIndexesIterable<Document> indexes2 = collectionIndex2Class.listIndexes();
+
+      List<Document> indexes2AsList = StreamSupport
+        .stream(indexes2.spliterator(), false)
+        .toList();
+
+      Map<String, Document> indexes2AsMap = StreamSupport
+        .stream(indexes2.spliterator(), false)
+        .collect(Collectors.toMap(
+          d -> d.get("key", Document.class).keySet().stream().findFirst().get(),
+          d -> d
+        ));
+
+      // +1 for the _id field
+      assertEquals(4 + 1, indexes2AsList.size());
+      assertEquals(1, indexes2AsMap.get("field1")
+                                  .get("key", Document.class)
+                                  .get("field1"));
+      assertEquals(-1, indexes2AsMap.get("field2")
                                    .get("key", Document.class)
                                    .get("field2"));
 

@@ -1,5 +1,6 @@
 package tr.com.hive.smm;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import com.mongodb.client.MongoCollection;
@@ -14,6 +15,7 @@ import org.bson.codecs.EncoderContext;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import tr.com.hive.smm.mapping.annotation.MongoEntity;
 import tr.com.hive.smm.mapping.annotation.index.Collation;
 import tr.com.hive.smm.mapping.annotation.index.Field;
 import tr.com.hive.smm.mapping.annotation.index.Index;
@@ -85,6 +87,15 @@ public class IndexHelper {
   }
 
   private MongoCollection<Document> getCollection(Class<?> clazz) {
+    if (clazz.isAnnotationPresent(MongoEntity.class)) {
+      MongoEntity annotation = clazz.getAnnotation(MongoEntity.class);
+      String value = annotation.value();
+
+      if (!Strings.isNullOrEmpty(value)) {
+        return mongoDatabase.getCollection(value);
+      }
+    }
+
     String simpleName = clazz.getSimpleName();
     return mongoDatabase.getCollection(simpleName);
   }
