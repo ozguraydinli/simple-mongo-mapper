@@ -5,6 +5,7 @@ import com.google.common.base.Predicates;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoDatabase;
 
+import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
@@ -36,6 +37,8 @@ public class SimpleMapper {
 
   private final List<String> packages = new ArrayList<>();
   private final List<Class<?>> classList = new ArrayList<>();
+
+  private List<? extends CodecProvider> extraProviders;
 
   private final ClassLoader classLoader;
 
@@ -99,6 +102,13 @@ public class SimpleMapper {
       )
     );
 
+    if (extraProviders != null && !extraProviders.isEmpty()) {
+      codecRegistry = CodecRegistries.fromRegistries(
+        CodecRegistries.fromProviders(extraProviders),
+        codecRegistry
+      );
+    }
+
     return this;
   }
 
@@ -157,6 +167,7 @@ public class SimpleMapper {
 
     private final List<String> packages = new ArrayList<>();
     private final List<Class<?>> classList = new ArrayList<>();
+    private final List<? extends CodecProvider> extraProviders = new ArrayList<>();
     private Predicate<String> predicate = Predicates.alwaysTrue();
 
     public SimpleMapperBuilder forClass(Class<?> clazz) {
@@ -183,6 +194,8 @@ public class SimpleMapper {
       simpleMapper.packages.addAll(packages);
       simpleMapper.classList.addAll(classList);
       simpleMapper.classNameFilter = predicate;
+
+      simpleMapper.extraProviders = extraProviders;
 
       return simpleMapper.create();
     }
