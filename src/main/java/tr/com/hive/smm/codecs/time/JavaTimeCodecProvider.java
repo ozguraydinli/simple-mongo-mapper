@@ -4,6 +4,7 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Month;
 import java.time.MonthDay;
@@ -25,6 +26,7 @@ public class JavaTimeCodecProvider implements CodecProvider {
 
   static {
 //    CODEC_MAP.put(Instant.class, registry -> new InstantCodec());
+    CODEC_MAP.put(Clock.class, registry -> new ClockCodec());
     CODEC_MAP.put(Duration.class, registry -> new DurationAsDocumentCodec());
     CODEC_MAP.put(Period.class, registry -> new PeriodAsDocumentCodec());
     CODEC_MAP.put(Month.class, registry -> new MonthAsInt32Codec());
