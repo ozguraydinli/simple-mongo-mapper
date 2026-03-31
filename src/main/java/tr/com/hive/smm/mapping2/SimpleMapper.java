@@ -167,7 +167,7 @@ public class SimpleMapper {
 
     private final List<String> packages = new ArrayList<>();
     private final List<Class<?>> classList = new ArrayList<>();
-    private final List<? extends CodecProvider> extraProviders = new ArrayList<>();
+    private List<? extends CodecProvider> extraProviders;
     private Predicate<String> predicate = Predicates.alwaysTrue();
 
     public SimpleMapperBuilder forClass(Class<?> clazz) {
@@ -177,6 +177,11 @@ public class SimpleMapper {
 
     public SimpleMapperBuilder forPackage(String packageName) {
       packages.add(packageName);
+      return this;
+    }
+
+    public SimpleMapperBuilder extraProviders(List<? extends CodecProvider> extraProviders) {
+      this.extraProviders = extraProviders;
       return this;
     }
 
