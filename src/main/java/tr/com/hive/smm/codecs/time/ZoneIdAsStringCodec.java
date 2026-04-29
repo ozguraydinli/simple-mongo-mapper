@@ -14,6 +14,7 @@ import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import static java.util.Objects.requireNonNull;
 
@@ -36,7 +37,11 @@ public final class ZoneIdAsStringCodec implements Codec<ZoneId> {
     requireNonNull(writer, "writer is null");
     requireNonNull(value, "value is null");
 
-    writer.writeString(value.getId());
+    if (value instanceof ZoneOffset) {
+      writer.writeString(value.getId());
+    } else {
+      writer.writeString(value.normalized().getId());
+    }
   }
 
   @Override
