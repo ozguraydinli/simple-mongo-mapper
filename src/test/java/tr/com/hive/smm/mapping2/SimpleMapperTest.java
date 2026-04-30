@@ -173,7 +173,11 @@ class SimpleMapperTest {
       );
 
       // java.time
+      ZoneId customZone = ZoneId.of("Africa/Bissau");
+      assertEquals("java.time.ZoneRegion", customZone.getClass().getName());
+
       classA1.varZonedDateTime = ZonedDateTime.now(clock);
+      classA1.varZoneId = customZone;
       classA1.varOffsetTime = OffsetTime.now(clock);
       classA1.varYearMonth = YearMonth.now(clock);
       classA1.varYear = Year.now(clock);
@@ -341,6 +345,8 @@ class SimpleMapperTest {
       // java.time
       assertNotNull(fromDb.varZonedDateTime);
       assertEquals(ZonedDateTime.now(clock), fromDb.varZonedDateTime);
+      assertNotNull(fromDb.varZoneId);
+      assertEquals(ZoneId.of("Africa/Bissau"), fromDb.varZoneId);
       assertNotNull(fromDb.varOffsetTime);
       assertEquals(OffsetTime.now(clock), fromDb.varOffsetTime);
       assertNotNull(fromDb.varYearMonth);

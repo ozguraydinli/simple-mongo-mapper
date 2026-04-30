@@ -14,6 +14,7 @@ import java.time.MonthDay;
 import java.time.OffsetTime;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -173,6 +174,7 @@ public class ClassA1 extends ClassA1Super {
   public EmbeddedA1WithoutAnnotation varEmbeddedA1WithoutAnnotation;
 
   public ZonedDateTime varZonedDateTime;
+  public ZoneId varZoneId;
   public OffsetTime varOffsetTime;
   public YearMonth varYearMonth;
   public MonthDay varMonthDay;

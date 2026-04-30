@@ -17,6 +17,7 @@
 package tr.com.hive.smm.codecs.time;
 
 import org.bson.BsonReader;
+import org.bson.BsonType;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
@@ -37,7 +38,7 @@ public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> 
   private final Codec<ZoneOffset> zoneOffsetCodec;
   private final Codec<ZoneId> zoneIdCodec;
 
-  private ZonedDateTimeAsDocumentCodec(Codec<LocalDateTime> localDateTimeCodec, Codec<ZoneOffset> zoneOffsetCodec, Codec<ZoneId> zoneIdCodec) {
+  public ZonedDateTimeAsDocumentCodec(Codec<LocalDateTime> localDateTimeCodec, Codec<ZoneOffset> zoneOffsetCodec, Codec<ZoneId> zoneIdCodec) {
     this.localDateTimeCodec = requireNonNull(localDateTimeCodec, "localDateTimeCodec is null");
     this.zoneOffsetCodec = requireNonNull(zoneOffsetCodec, "zoneOffsetCodec is null");
     this.zoneIdCodec = requireNonNull(zoneIdCodec, "zoneIdCodec is null");
@@ -77,17 +78,37 @@ public final class ZonedDateTimeAsDocumentCodec implements Codec<ZonedDateTime> 
 
     reader.readStartDocument();
 
-    reader.readName("dateTime");
-    localDateTimeCodec.decode(reader, decoderContext);
-    zoneOffsetCodec.decode(reader, decoderContext);
-    zoneIdCodec.decode(reader, decoderContext);
-    reader.readDateTime("value");
+    String valueAsString = null;
 
-    String value = reader.readString("valueString");
+    // We iterate through the document dynamically. Order doesn't matter.
+    while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
+      String fieldName = reader.readName();
+
+      switch (fieldName) {
+        case "valueString":
+          valueAsString = reader.readString();
+          break;
+        case "value":
+        case "dateTime":
+        case "zone":
+        case "offset":
+          // We skip fields we don't need to rebuild the object,
+          // avoiding unnecessary object allocations.
+          reader.skipValue();
+          break;
+        default:
+          // Safely skip any unexpected fields (future-proofing)
+          reader.skipValue();
+      }
+    }
 
     reader.readEndDocument();
 
-    return ZonedDateTime.parse(value);
+    if (valueAsString == null) {
+      throw new IllegalStateException("Cannot decode ZonedDateTime: missing 'valueString' field");
+    }
+
+    return ZonedDateTime.parse(valueAsString);
   }
 
   @Override

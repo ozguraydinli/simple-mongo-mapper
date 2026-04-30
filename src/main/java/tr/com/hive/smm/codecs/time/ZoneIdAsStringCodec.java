@@ -13,8 +13,10 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
+import java.time.DateTimeException;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
+
+import tr.com.hive.smm.codecs.exception.InvalidZoneIdException;
 
 import static java.util.Objects.requireNonNull;
 
@@ -37,11 +39,7 @@ public final class ZoneIdAsStringCodec implements Codec<ZoneId> {
     requireNonNull(writer, "writer is null");
     requireNonNull(value, "value is null");
 
-    if (value instanceof ZoneOffset) {
-      writer.writeString(value.getId());
-    } else {
-      writer.writeString(value.normalized().getId());
-    }
+    writer.writeString(value.normalized().getId());
   }
 
   @Override
@@ -50,7 +48,13 @@ public final class ZoneIdAsStringCodec implements Codec<ZoneId> {
 
     String zoneId = reader.readString();
 
-    return ZoneId.of(zoneId);
+    try {
+
+      return ZoneId.of(zoneId);
+
+    } catch (DateTimeException e) {
+      throw new InvalidZoneIdException("Invalid ZoneId string found in database: '" + zoneId + "'", e);
+    }
   }
 
   @Override
@@ -58,4 +62,5 @@ public final class ZoneIdAsStringCodec implements Codec<ZoneId> {
     return ZoneId.class;
   }
 
+  // 09:13
 }

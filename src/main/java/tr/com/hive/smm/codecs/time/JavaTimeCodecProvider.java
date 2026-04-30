@@ -43,6 +43,19 @@ public class JavaTimeCodecProvider implements CodecProvider {
   @SuppressWarnings("unchecked")
   @Override
   public <T> Codec<T> get(Class<T> clazz, CodecRegistry registry) {
+    //subclass first
+    if (ZoneOffset.class.isAssignableFrom(clazz)) {
+      return (Codec<T>) CODEC_MAP.get(ZoneOffset.class).apply(registry);
+    }
+
+    if (ZoneId.class.isAssignableFrom(clazz)) {
+      return (Codec<T>) CODEC_MAP.get(ZoneId.class).apply(registry);
+    }
+
+    if (Clock.class.isAssignableFrom(clazz)) {
+      return (Codec<T>) CODEC_MAP.get(Clock.class).apply(registry);
+    }
+
     if (CODEC_MAP.containsKey(clazz)) {
       return (Codec<T>) CODEC_MAP.get(clazz).apply(registry);
     }
