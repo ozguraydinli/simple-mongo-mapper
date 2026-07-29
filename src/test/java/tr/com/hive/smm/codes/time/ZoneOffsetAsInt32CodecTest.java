@@ -12,8 +12,8 @@ import java.time.ZoneOffset;
 
 import tr.com.hive.smm.codecs.time.ZoneOffsetAsInt32Codec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ZoneOffsetAsInt32CodecTest {
 

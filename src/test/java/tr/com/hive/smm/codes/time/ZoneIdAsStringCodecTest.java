@@ -14,9 +14,9 @@ import java.time.ZoneOffset;
 import tr.com.hive.smm.codecs.exception.InvalidZoneIdException;
 import tr.com.hive.smm.codecs.time.ZoneIdAsStringCodec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ZoneIdAsStringCodecTest {
 

@@ -1,28 +1,23 @@
 package tr.com.hive.smm.codes.time;
 
 import org.bson.BsonDocument;
-import org.bson.BsonDocumentReader;
 import org.bson.BsonDocumentWriter;
-import org.bson.BsonString;
-import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.bson.codecs.jsr310.LocalDateTimeCodec;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-import tr.com.hive.smm.codecs.exception.InvalidZoneIdException;
 import tr.com.hive.smm.codecs.time.ZoneIdAsStringCodec;
 import tr.com.hive.smm.codecs.time.ZoneOffsetAsInt32Codec;
 import tr.com.hive.smm.codecs.time.ZonedDateTimeAsDocumentCodec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ZonedDateTimeAsDocumentCodecTest {
+
   @Test
   void encode_ZonedDateTime_WritesComprehensiveDocument() {
     // Assuming you have a way to instantiate the codec with its dependencies

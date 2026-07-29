@@ -6,6 +6,8 @@ import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,10 @@ public class ClassA extends ClassASuper {
   public Date varDate;
 
   public Instant varInstant;
+
+  public Year varYear;
+
+  public LocalDate varLocalDate;
 
   public ObjectId varObjectId;
 

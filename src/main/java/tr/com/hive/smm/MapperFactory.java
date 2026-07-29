@@ -13,6 +13,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Year;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -185,7 +187,9 @@ public class MapperFactory {
 
   public static boolean isDateTimeType(Class<?> clazz) {
     return Date.class.isAssignableFrom(clazz) ||
-           Instant.class.isAssignableFrom(clazz);
+           Instant.class.isAssignableFrom(clazz) ||
+           Year.class.isAssignableFrom(clazz) ||
+           LocalDate.class.isAssignableFrom(clazz);
   }
 
   public static boolean isKnownType(Class<?> clazz) {

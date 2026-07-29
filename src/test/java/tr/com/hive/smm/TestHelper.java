@@ -6,7 +6,8 @@ import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
-import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.mongodb.MongoDBContainer;
 
 import java.time.Duration;
 import java.util.function.Consumer;
@@ -14,12 +15,15 @@ import java.util.function.Consumer;
 public class TestHelper {
 
   public static void withMongoClient(Consumer<MongoClient> testBody) {
-    try (MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0.5")) {
+    try (org.testcontainers.mongodb.MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:8.3.4")
+      .withReplicaSet()
+      .withEnv("GLIBC_TUNABLES", "glibc.cpu.hwcaps=-SHSTK")
+      .waitingFor(Wait.forListeningPort())
+      .withStartupTimeout(Duration.ofSeconds(180L))
+    ) {
 
       mongoDBContainer.withStartupTimeout(Duration.ofSeconds(180L))
                       .start();
-
-      System.out.println("Mongodb started: " + mongoDBContainer.getConnectionString());
 
       try (MongoClient mongoClient = MongoClients.create(
         MongoClientSettings.builder()

@@ -1,9 +1,13 @@
 package tr.com.hive.smm.mapping;
 
 import org.bson.BsonDateTime;
+import org.bson.BsonInt32;
 import org.bson.BsonValue;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import tr.com.hive.smm.MapperFactory;
@@ -19,14 +23,25 @@ public class DateTimeConverter extends AbstractConverter implements Converter {
 
   @Override
   public Object decode(Object obj) {
-    if (!(obj instanceof Date)) {
-      throw new MappingException("Expecting a Date: " + key);
+    if (!(obj instanceof Date) &&
+        !(obj instanceof Integer) &&
+        !(obj instanceof BsonDateTime)
+    ) {
+      throw new MappingException("Expecting a Date: " + key + " " + obj.getClass().getSimpleName());
     }
 
     if (clazz == Date.class) {
       return obj;
     } else if (clazz == Instant.class) {
       return ((Date) obj).toInstant();
+    } else if (clazz == LocalDate.class) {
+      if(obj instanceof BsonDateTime) {
+        return new Date(((BsonDateTime) obj).getValue()).toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+      } else {
+        return ((Date) obj).toInstant().atZone(ZoneOffset.UTC).toLocalDate();
+      }
+    } else if (clazz == Year.class) {
+      return Year.of((int) obj);
     } else {
       throw new MappingException("Expecting a Date: " + key);
     }
@@ -40,6 +55,10 @@ public class DateTimeConverter extends AbstractConverter implements Converter {
       return new BsonDateTime(((Date) obj).getTime());
     } else if (Instant.class.isAssignableFrom(clzz) || Instant.class == clzz) {
       return new BsonDateTime(((Instant) obj).toEpochMilli());
+    } else if (LocalDate.class.isAssignableFrom(clzz) || LocalDate.class == clzz) {
+      return new BsonDateTime(((LocalDate) obj).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli());
+    } else if (Year.class.isAssignableFrom(clzz) || Year.class == clzz) {
+      return new BsonInt32((int) obj);
     } else {
       throw new MappingException("Unkown date type: " + clzz.getName());
     }
@@ -55,6 +74,10 @@ public class DateTimeConverter extends AbstractConverter implements Converter {
       return obj;
     } else if (obj instanceof Instant) {
       return new Date(((Instant) obj).toEpochMilli());
+    } else if (obj instanceof LocalDate) {
+      return new Date(((LocalDate) obj).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli());
+    } else if (obj instanceof Year) {
+      return ((Year) obj).getValue();
     } else {
       throw new MappingException("Expecting a Date: " + key);
     }

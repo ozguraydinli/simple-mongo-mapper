@@ -17,6 +17,9 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +71,8 @@ public class SimpleMongoMapperTest {
     Date now = new Date();
     document.put("varDate", now);
     document.put("varInstant", now);
+    document.put("varYear", 2006);
+    document.put("varLocalDate", new BsonDateTime(LocalDate.of(2024, 5, 17).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()));
 
     ObjectId classBId = new ObjectId();
     document.put("refClassB", new DBRef(ClassBRef.class.getSimpleName(), classBId));
@@ -87,6 +92,8 @@ public class SimpleMongoMapperTest {
     assertEquals(Integer.valueOf(1), classA.varBoxedInt);
     assertEquals(new Date(now.getTime()), classA.varDate);
     assertEquals(now.toInstant(), classA.varInstant);
+    assertEquals(Year.of(2006), classA.varYear);
+    assertEquals(LocalDate.of(2024, 5, 17), classA.varLocalDate);
     assertEquals(new ObjectId(varId.toString()), classA.varObjectId);
     assertEquals(new ObjectId(classBId.toString()), classA.refClassB.id);
     assertEquals("s1", classA.varClassB.varString);
@@ -286,6 +293,8 @@ public class SimpleMongoMapperTest {
     classA.varEnum = MyEnum.En1;
     classA.varDate = new Date();
     classA.varInstant = Instant.now();
+    classA.varYear = Year.of(2024);
+    classA.varLocalDate = LocalDate.of(2024, 5, 17);
 
     ObjectId id2 = new ObjectId();
     classA.varClassC = new ClassC(id2);
@@ -312,6 +321,8 @@ public class SimpleMongoMapperTest {
     assertEquals("En1", document.getString("varEnum"));
     assertEquals(new Date(classA.varDate.getTime()), document.getDate("varDate"));
     assertEquals(new Date(classA.varInstant.toEpochMilli()), document.getDate("varInstant"));
+    assertEquals(2024, document.getInteger("varYear"));
+    assertEquals(new Date(classA.varLocalDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()), document.getDate("varLocalDate"));
     assertEquals("s1", document(document.get("varClassB")).getString("varString"));
     assertEquals(new ObjectId(id2.toString()), document(document.get("varClassC")).getObjectId("Id"));
     assertEquals(Integer.valueOf(1), document(document.get("varClassB")).getInteger("varInt"));
@@ -544,10 +555,15 @@ public class SimpleMongoMapperTest {
 
     Date now = new Date();
     classA.varDate = now;
+    classA.varInstant = now.toInstant();
+    classA.varYear = Year.of(2024);
+    classA.varLocalDate = LocalDate.of(2024, 5, 17);
 
     Document document = simpleMongoMapper.toDocument(classA);
 
     assertEquals(now.getYear() + 1, ((Date) document.get("varDate")).getYear());
+    assertEquals(now.getTime(), document.getDate("varInstant").getTime());
+    assertEquals(LocalDate.of(2024, 5, 17).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(), document.getDate("varLocalDate").getTime());
   }
 
   // Custom Date converter, increments year by 1
