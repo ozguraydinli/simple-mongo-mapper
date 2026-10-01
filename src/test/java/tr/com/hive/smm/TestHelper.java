@@ -15,9 +15,8 @@ import java.util.function.Consumer;
 public class TestHelper {
 
   public static void withMongoClient(Consumer<MongoClient> testBody) {
-    try (org.testcontainers.mongodb.MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:8.3.4")
+    try (org.testcontainers.mongodb.MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:9.0.2")
       .withReplicaSet()
-      .withEnv("GLIBC_TUNABLES", "glibc.cpu.hwcaps=-SHSTK")
       .waitingFor(Wait.forListeningPort())
       .withStartupTimeout(Duration.ofSeconds(180L))
     ) {
